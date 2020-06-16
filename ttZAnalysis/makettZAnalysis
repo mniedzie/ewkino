@@ -3,7 +3,7 @@ CFLAGS= -Wl,--no-as-needed,-lpthread
 LDFLAGS=`root-config --glibs --cflags`
 SOURCES= ttZAnalysis.cc ../codeLibrary.o src/ttZSelection.cc src/ttZVariables.cc
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=controlRegions
+EXECUTABLE=ttZAnalysis
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

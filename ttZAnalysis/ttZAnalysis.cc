@@ -15,8 +15,8 @@
 #include "../plotting/tdrStyle.h"
 
 //include ewkino specific code
-#include "interface/ewkinoSelection.h"
-#include "interface/ewkinoVariables.h"
+#include "interface/ttZSelection.h"
+#include "interface/ttZVariables.h"
 
 
 //compare floating points
@@ -26,7 +26,7 @@ bool floatEqual( const double lhs, const double rhs ){
 
 
 //build histograms 
-std::vector< HistInfo > makeDistributionInfo( const std::string& controlRegion ){
+std::vector< HistInfo > makeDistributionInfo(){
 
     //make general plots
     std::vector< HistInfo > histInfoVec;
@@ -40,13 +40,9 @@ std::vector< HistInfo > makeDistributionInfo( const std::string& controlRegion )
         HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
         HistInfo( "leptonEtaTrailing", "|#eta|^{trailing lepton}", 10, 0, 2.5 ),
 
-        ( controlRegion == "WZ" ? HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 30, 100 ) : HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 200 ) ),
-        ( controlRegion == "WZ" ? HistInfo( "mt", "M_{T}^{W} (GeV)", 10, 50, 100 ) : HistInfo( "mt", "M_{T}^{W} (GeV)", 10, 0, 200 ) ),
-        ( ( controlRegion == "TTZ" || controlRegion == "WZ" ) ? HistInfo( "mll", "M_{ll} (GeV)", 10, 75, 105 ) :  HistInfo( "mll", "M_{ll} (GeV)", 10, 0, 200 ) ),
-        HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 800 ),
+        HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 200 ),
+        HistInfo( "mll", "M_{ll} (GeV)", 10, 75, 105 ),
         HistInfo( "ht", "H_{T} (GeV)", 10, 0, 800 ),
-        HistInfo( "m3l", "M_{3l} (GeV)", 10, 0, 400 ),
-        HistInfo( "mt3l", "M_{T}^{3l} (GeV)", 10, 0, 600 ),
 
         HistInfo( "nJets", "number of jets", 8, 0, 8 ),
         HistInfo( "nBJets", "number of b-jets (medium deep CSV)", 5, 0, 5 ),
@@ -64,16 +60,15 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
         event.lepton( 0 ).pt(),
         event.lepton( 1 ).pt(),
         event.lepton( 2 ).pt(),
+
         event.lepton( 0 ).absEta(),
         event.lepton( 1 ).absEta(),
         event.lepton( 2 ).absEta(),
+
         varMap.at("met"),
-        varMap.at("mtW"),
         varMap.at("mll"),
-        varMap.at("ltmet"),
         varMap.at("ht"),
-        varMap.at("m3l"),
-        varMap.at("mt3l"),
+
         varMap.at("numberOfJets"),
         varMap.at("numberOfBJets"),
         static_cast< double >( event.numberOfVertices() )
@@ -92,13 +87,13 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
     analysisTools::checkYearString( year );
 
     //selection that defines the control region
-    const std::map< std::string, std::function< bool (Event&, const std::string&) > > crSelectionFunctionMap{
-        { "WZ", ttZ::passVariedSelectionWZCR },
-        { "XGamma", ttZ::passVariedSelectionXGammaCR },
-        { "TTZ", ttZ::passVariedSelectionTTZCR },
-        { "NP", ttZ::passVariedSelectionNPCR }
-    };
-    auto passSelection = crSelectionFunctionMap.at( controlRegion );
+//    const std::map< std::string, std::function< bool (Event&, const std::string&) > > crSelectionFunctionMap{
+//        { "WZ", ttZ::passVariedSelectionWZCR },
+//        { "XGamma", ttZ::passVariedSelectionXGammaCR },
+//        { "TTZ", ttZ::passVariedSelectionTTZCR },
+//        { "NP", ttZ::passVariedSelectionNPCR }
+//    };
+//    auto passSelection = crSelectionFunctionMap.at( controlRegion );
 
 
     //build TreeReader and loop over samples
@@ -111,56 +106,56 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
     std::shared_ptr< ReweighterFactory >reweighterFactory( new ttZReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
 
-//    //read FR maps
-//    std::cout << "building FR maps" << std::endl;
-//    TFile* frFileMuons = TFile::Open( ( "frMaps/fakeRateMap_data_muon_" + year + "_mT.root" ).c_str() );
-//    std::shared_ptr< TH2 > frMapMuons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileMuons->Get( ( "fakeRate_muon_" + year ).c_str() ) ) );
-//    frMapMuons->SetDirectory( gROOT );
-//    frFileMuons->Close();
-//
-//    TFile* frFileElectrons = TFile::Open( ( "frMaps/fakeRateMap_data_electron_" + year + "_mT.root" ).c_str() );
-//    std::shared_ptr< TH2 > frMapElectrons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileElectrons->Get( ( "fakeRate_electron_" + year ).c_str() ) ) );
-//    frMapElectrons->SetDirectory( gROOT );
-//    frFileElectrons->Close();
-//
-//    //histogram collection
-//    std::cout << "building histograms" << std::endl;
-//    std::vector< HistInfo > histInfoVector = makeDistributionInfo( deltaM, controlRegion  );
-//
-//    //make histograms for each process, and integral signal to check shapes
-//    //add an additional histogram for the nonprompt prediction
-//    std::vector< Sample > sampleVec = treeReader.sampleVector();
-//    std::vector< std::vector< std::shared_ptr< TH1D > > > histograms( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
-//    for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//        for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
-//            if( p < sampleVec.size() ){
-//                histograms[ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() );
-//            } else {
-//                histograms[ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt" );
-//            }
-//        }
-//    }
-//
-//    const std::vector< std::string > shapeUncNames = { "JEC_" + year, "JER_" + year, "uncl", "scale", "pileup", "bTag_" + year, "prefire", "lepton_reco", "lepton_id"}; //, "pdf" }; //"scaleXsec", "pdfXsec" }
-//    std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
-//    std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
-//    for( const auto& unc : shapeUncNames ){
-//        histogramsUncDown[ unc ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
-//        histogramsUncUp[ unc ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
-//        
-//        for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//            for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
-//                if( p < sampleVec.size() ){
-//                    histogramsUncDown[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + unc + "Down" );
-//                    histogramsUncUp[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + unc + "Up" );
-//                } else {
-//                    histogramsUncDown[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt"  + unc + "Down" );
-//                    histogramsUncUp[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt" + unc + "Up" );
-//                }
-//            }
-//        }
-//    }
-//
+    //read FR maps
+    std::cout << "building FR maps" << std::endl;
+    TFile* frFileMuons = TFile::Open( ( "frMaps/muFR_QCD_MC_Marek_" + year + ".root" ).c_str() );
+    std::shared_ptr< TH2 > frMapMuons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileMuons->Get( "passed" ) ) );
+    frMapMuons->SetDirectory( gROOT );
+    frFileMuons->Close();
+
+    TFile* frFileElectrons = TFile::Open( ( "frMaps/elFR_QCD_MC_Marek_" + year + ".root" ).c_str() );
+    std::shared_ptr< TH2 > frMapElectrons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileElectrons->Get( "passed" ) ) );
+    frMapElectrons->SetDirectory( gROOT );
+    frFileElectrons->Close();
+
+    //histogram collection, histInfoVector will contain histinfo on all histograms defined at the top of the file withink the makeDist... function
+    std::cout << "building histograms" << std::endl;
+    std::vector< HistInfo > histInfoVector = makeDistributionInfo();
+
+    //make histograms for each process, and integral signal to check shapes
+    //add an additional histogram for the nonprompt prediction
+    std::vector< Sample > sampleVec = treeReader.sampleVector();
+    std::vector< std::vector< std::shared_ptr< TH1D > > > histograms( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 ) );
+    for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+        for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
+            if( p < sampleVec.size() ){
+                histograms[ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() );
+            } else {
+                histograms[ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt" );
+            }
+        }
+    }
+
+    const std::vector< std::string > shapeUncNames = { "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_" + year, "prefire", "lepton_reco", "lepton_id"}; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
+    std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
+    for( const auto& unc : shapeUncNames ){
+        histogramsUncDown[ unc ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
+        histogramsUncUp[ unc ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
+        
+        for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+            for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
+                if( p < sampleVec.size() ){
+                    histogramsUncDown[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + unc + "Down" );
+                    histogramsUncUp[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + unc + "Up" );
+                } else {
+                    histogramsUncDown[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt"  + unc + "Down" );
+                    histogramsUncUp[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt" + unc + "Up" );
+                }
+            }
+        }
+    }
+
 //    std::cout << "event loop" << std::endl;
 //
 //    for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
@@ -562,22 +557,23 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 //        plotDataVSMC( mergedHistograms[dist][0], &mergedHistograms[dist][1], &proc[0], proc.size() - 1, directoryName + histInfoVector[ dist ].name() + plotNameAddition + ".pdf" , "ewkino", false, false, header, totalSystUncertainties[ dist ], nullptr );
 //        plotDataVSMC( mergedHistograms[dist][0], &mergedHistograms[dist][1], &proc[0], proc.size() - 1, directoryName + histInfoVector[ dist ].name() + plotNameAddition + "_log.pdf" , "ewkino", true, false, header, totalSystUncertainties[ dist ], nullptr );
 //    }
-//}
+}
 
 
 
 int main( int argc, char* argv[] ){
     setTDRStyle();
-    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/";
+//    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/";
+    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/mniedzie/old_ntuples/ntuples_ttV_2017/";
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     
     //run specific model and mass splitting and year
     // std::string model = argvStr[1];
     // std::string deltaM = argvStr[2];
     // std::string year = argvStr[3];
-     std::string year = "2018";
+     std::string year = "2017";
     // std::string controlRegion = argvStr[4];
     analyze( year, sampleDirectoryPath );
 
     return 0;
-
+}

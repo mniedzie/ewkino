@@ -8,8 +8,6 @@
 #include "../../Tools/interface/stringTools.h"
 #include "../../constants/particleMasses.h"
 
-//include ttZ categorization
-#include "../interface/ttZCategorization.h"
 
 
 void ttZ::applyBaselineObjectSelection( Event& event, const bool allowUncertainties ){
@@ -129,7 +127,6 @@ bool ttZ::passVariedSelectionWZCR( Event& event, const std::string& uncertainty 
     static constexpr double maxMet = 100;
     static constexpr double minMT = 50;
     static constexpr double maxMT = 100;
-    if( ttZ::ttZCategory( event ) != ttZ::trilepLightOSSF ) return false;
     if( numberOfVariedBJets( event, uncertainty ) > 0 ) return false;
     Met met = variedMet( event, uncertainty );
     if( met.pt() < minMet || met.pt() > maxMet ) return false;
@@ -142,7 +139,6 @@ bool ttZ::passVariedSelectionWZCR( Event& event, const std::string& uncertainty 
 
 bool ttZ::passVariedSelectionTTZCR( Event& event, const std::string& uncertainty ){
     static constexpr size_t numberOfBJets = 1;
-    if( ttZ::ttZCategory( event ) != ttZ::trilepLightOSSF ) return false;
     if( numberOfVariedBJets( event, uncertainty ) < numberOfBJets ) return false;
     if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 15 ) return false;
     if( std::abs( event.leptonCollection().objectSum().mass() - particle::mZ ) < 15 ) return false;
@@ -153,18 +149,12 @@ bool ttZ::passVariedSelectionTTZCR( Event& event, const std::string& uncertainty
 bool ttZ::passVariedSelectionNPCR( Event& event, const std::string& uncertainty ){
     static constexpr size_t numberOfBJets = 1;
     if( numberOfVariedBJets( event, uncertainty ) < numberOfBJets ) return false;
-    if( ttZ::ttZCategory( event ) == ttZ::trilepLightOSSF ){
-        if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) < 15 ) return false;
-    } else {
-        if( ttZ::ttZCategory( event ) != ttZ::trilepLightNoOSSF ) return false;
-    }
     return true;
 }
 
 
 bool ttZ::passVariedSelectionXGammaCR( Event& event, const std::string& uncertainty ){
     if( numberOfVariedBJets( event, uncertainty ) > 0 ) return false;
-    if( ttZ::ttZCategory( event ) != ttZ::trilepLightOSSF ) return false;
     if( variedMet( event, uncertainty ).pt() >= 50 ) return false;
     if( event.bestZBosonCandidateMass() >= 75 ) return false;
     if( std::abs( event.leptonCollection().objectSum().mass() - particle::mZ ) >= 15 ) return false;

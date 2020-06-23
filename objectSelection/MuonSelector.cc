@@ -5,7 +5,7 @@
 
 
 double leptonMVACutMuon(){
-    return 0.85;
+    return 0.4;
 }
 
 
@@ -14,7 +14,7 @@ loose muon selection
 */
 
 bool MuonSelector::isLooseBase() const{
-    if( muonPtr->uncorrectedPt() <= 5 ) return false;
+    if( muonPtr->uncorrectedPt() <= 10 ) return false;
     if( muonPtr->absEta() >= 2.4 ) return false; 
     if( fabs( muonPtr->dxy() ) >= 0.05 ) return false;
     if( fabs( muonPtr->dz() ) >= 0.1 ) return false;
@@ -61,42 +61,48 @@ double slidingDeepFlavorThreshold( const double looseWP, const double mediumWP, 
 bool MuonSelector::isFOBase() const{
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
-    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-        if( muonPtr->ptRatio() <= 0.65 ) return false;
+    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ){
+        if( muonPtr->ptRatio() <= 0.4 ) return false;
     }
+//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
+//        if( muonPtr->ptRatio() <= 0.65 ) return false;
+//    }
     return true;
 }
 
 
 bool MuonSelector::isFO2016() const{
-    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2016(), bTagWP::mediumDeepFlavor2016(), muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-    } else {
-        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2016() ) return false;
-    }
+    if( muonPtr->closestJetDeepCSV()    >= bTagWP::tightDeepCSV2016() ) return false;
+//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
+//        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2016(), bTagWP::mediumDeepFlavor2016(), muonPtr->uncorrectedPt() );
+//        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+//    } else {
+//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2016() ) return false;
+//    }
     return true;
 }
 
 
 bool MuonSelector::isFO2017() const{
-    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2017(), bTagWP::mediumDeepFlavor2017(), muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-    } else {
-        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2017() ) return false;
-    }
+    if( muonPtr->closestJetDeepCSV()    >= bTagWP::tightDeepCSV2017() ) return false;
+//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
+//        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2017(), bTagWP::mediumDeepFlavor2017(), muonPtr->uncorrectedPt() );
+//        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+//    } else {
+//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2017() ) return false;
+//    }
     return true;
 }
 
 
 bool MuonSelector::isFO2018() const{
-    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2018(), bTagWP::mediumDeepFlavor2018(), muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-    } else {
-        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2018() ) return false;
-    }
+    if( muonPtr->closestJetDeepCSV()    >= bTagWP::tightDeepCSV2018() ) return false;
+//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
+//        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2018(), bTagWP::mediumDeepFlavor2018(), muonPtr->uncorrectedPt() );
+//        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+//    } else {
+//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2018() ) return false;
+//    }
     return true;
 }
 
@@ -108,7 +114,7 @@ tight muon selection
 bool MuonSelector::isTightBase() const{
     if( !isFO() ) return false;
     if( !muonPtr->isMediumPOGMuon() ) return false;
-    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ) return false;
+    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ) return false;
     return true;
 }
 

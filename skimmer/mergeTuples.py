@@ -53,6 +53,6 @@ if __name__ == '__main__':
         sys.exit()
 
 
-    input_directory = os.path.abspath( '/user/wverbeke/Work' )
+    input_directory = os.path.abspath( '/user/mniedzie/Work/ntuples_skimmed_2016' )
     for sample in listSkimmedSampleDirectories( input_directory ):
-        mergeSample( os.path.join( input_directory, sample ), '/user/wverbeke/Work/ntuples_ewkino_new' )
+        mergeSample( os.path.join( input_directory, sample ), '/user/mniedzie/Work/ntuples_ttz_new' )

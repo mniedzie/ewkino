@@ -21,6 +21,7 @@ class Electron : public LightLepton{
         bool passDoubleEGEmulation() const{ return _passDoubleEGEmulation; }
         bool passConversionVeto() const{ return _passConversionVeto; }
         unsigned numberOfMissingHits() const{ return _numberOfMissingHits; }
+		bool electronChargeConst() const{ return _ElectronChargeConst; }
 
         float electronMVASummer16GP() const{ return _electronMVASummer16GP; }
         float electronMVASummer16HZZ() const{ return _electronMVASummer16HZZ; }
@@ -48,6 +49,7 @@ class Electron : public LightLepton{
         bool _passDoubleEGEmulation = false;
         bool _passConversionVeto = false;
         unsigned _numberOfMissingHits = 0;
+        bool _ElectronChargeConst = false;
     
         //several versions of electron MVA
         float _electronMVASummer16GP = 0;

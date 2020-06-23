@@ -3,6 +3,40 @@
 import os
 import sys
 
+name_bits =['DYJetsToLL_M-50',
+'GluGluHToZZTo4L_M125',
+'GluGluToContinToZZTo',
+'ST_tWll_5f_LO',
+'TGJets',
+'THQ_4f',
+'THW_5f',
+'THW_Hincl',
+'TTGJets_',
+'TTTT_TuneC',
+'TTWJetsToLNu_TuneC',
+'TTWW_TuneC',
+'TTWZ_TuneC',
+'TTZToLLNuNu_M-10_TuneC',
+'TTZToLL_M-1to10_TuneC',
+'TTZZ_TuneC',
+'VBF_HToZZTo4L',
+'WGToLNuG',
+'WWTo2L2Nu',
+'WWW_4F',
+'WWZJetsTo4L2Nu',
+'WWZ_',
+'WZG_TuneC',
+'WZTo3LNu',
+'WZZ_TuneC',
+'WminusH_HToZZTo4L',
+'WplusH_HToZZTo4L',
+'ZGToLLG_01J',
+'ZH_HToZZ',
+'ZZTo4L',
+'ZZZ',
+'tZq_ll_4f',
+'ttHToNonbb']
+
 #perform os.walk up to a specified depth
 def walkLimitedDepth( input_directory, max_depth ):
 	
@@ -26,7 +60,9 @@ def listSampleDirectories( input_directory, name_to_search ):
     for directory, subdirectories, files in walkLimitedDepth( input_directory, 1):
         for subdir in subdirectories:
             if name_to_search in subdir:
-                yield directory, subdir
+                for name_bit in name_bits:
+                    if name_bit in directory:
+                        yield directory, subdir
 
 
 #list all files containing an identifier ( used to list all root files in a given sample's directory )

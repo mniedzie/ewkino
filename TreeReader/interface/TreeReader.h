@@ -33,13 +33,16 @@ class TreeReader {
         ULong_t         _lumiBlock;
         ULong_t         _eventNb;
         UInt_t          _nVertex;
+        char          _nVertexChar;
         Float_t         _prefireWeight;
         Float_t         _prefireWeightDown;
         Float_t         _prefireWeightUp;
         Double_t        _weight;
         UInt_t          _nLheWeights;
+        char          _nLheWeightsChar;
         Double_t        _lheWeight[110];
         UInt_t          _nPsWeights;
+        char          _nPsWeightsChar;
         Double_t        _psWeight[14];
         Float_t         _nTrueInt;
         Double_t        _lheHTIncoming;
@@ -70,6 +73,11 @@ class TreeReader {
         Bool_t          _passTrigger_FR;
         Bool_t          _passTrigger_FR_iso;
         Bool_t          _passMETFilters;
+        char          _nLChar;
+        char          _nMuChar;
+        char          _nEleChar;
+        char          _nLightChar;
+        char          _nTauChar;
         UInt_t          _nL;
         UInt_t          _nMu;
         UInt_t          _nEle;
@@ -163,6 +171,7 @@ class TreeReader {
         UInt_t          _lProvenanceCompressed[nL_max];
         UInt_t          _lProvenanceConversion[nL_max];
         UInt_t          _nJets;
+        char          _nJetsChar;
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
         Double_t        _jetPt_JECDown[nJets_max];   

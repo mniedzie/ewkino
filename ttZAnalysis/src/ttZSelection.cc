@@ -16,6 +16,7 @@ void ttZ::applyBaselineObjectSelection( Event& event, const bool allowUncertaint
     event.cleanElectronsFromLooseMuons();
     event.cleanTausFromLooseLightLeptons();
     event.cleanJetsFromFOLeptons();
+    event.removeTaus();
     if( allowUncertainties ){
         event.jetCollection().selectGoodAnyVariationJets();
     } else {
@@ -42,27 +43,18 @@ bool ttZ::passLowMllVeto( const Event& event, const double vetoValue ){
 }
 
 
-bool ttZ::passBaselineSelection( Event& event, const bool allowUncertainties, const bool bVeto, const bool mllVeto ){
+bool ttZ::passBaselineSelection( Event& event, const bool allowUncertainties, const bool mllVeto ){
     
+	// only loose leptons are selected
     applyBaselineObjectSelection( event, allowUncertainties );
+	// accept event with at least 3 loose leptons
     if( event.numberOfLeptons() < 3 ) return false;
     if( mllVeto && !passLowMllVeto( event, 12 ) ) return false;
+
     event.selectFOLeptons();
     if( event.numberOfLeptons() < 3 ) return false;
     event.applyLeptonConeCorrection();
     event.sortLeptonsByPt();
-    if( event.numberOfTaus() > 2 ) return false;
-    if( bVeto ){
-        if( allowUncertainties ){
-            if( event.jetCollection().minNumberOfTightBTaggedJetsAnyVariation() > 0 ){
-                return false;
-            }
-        } else {
-            if( event.numberOfTightBTaggedJets() > 0 ){
-                return false;
-            }
-        }
-    }
     return true;
 }
 
@@ -90,6 +82,10 @@ JetCollection ttZ::variedJetCollection( const Event& event, const std::string& u
 
 JetCollection::size_type ttZ::numberOfVariedBJets( const Event& event, const std::string& uncertainty ){
     return ttZ::variedJetCollection( event, uncertainty ).numberOfTightBTaggedJets();
+}
+
+JetCollection::size_type ttZ::numberOfVariedJets( const Event& event, const std::string& uncertainty ){
+    return ttZ::variedJetCollection( event, uncertainty ).numberOfGoodAnyVariationJets();
 }
 
 
@@ -145,6 +141,17 @@ bool ttZ::passVariedSelectionTTZCR( Event& event, const std::string& uncertainty
     return true;
 }
 
+bool ttZ::passSelectionTTZ( Event& event, const std::string& uncertainty ){
+            if( event.isData() ) std::cout << "data in selection funciton" <<  std::endl;
+    if( numberOfVariedJets( event, uncertainty ) < 2 ) return false;
+            if( event.isData() ) std::cout << "data passed number of jets" <<  std::endl;
+    if( !( event.hasOSSFLightLeptonPair() ) ) return false;
+            if( event.isData() ) std::cout << "data passed ossf light lep pair" <<  std::endl;
+    if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) return false;
+            if( event.isData() ) std::cout << "data passed z boson candidate" <<  std::endl;
+    return true;
+}
+
 
 bool ttZ::passVariedSelectionNPCR( Event& event, const std::string& uncertainty ){
     static constexpr size_t numberOfBJets = 1;
@@ -190,12 +197,6 @@ bool ttZ::passTriggerSelection( const Event& event ){
     if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 2 ) ){
         if( event.passTriggers_eem() ) return true;
     }
-    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfTaus() >= 1 ) ){
-        if( event.passTriggers_mt() ) return true;
-    }
-    if( ( event.numberOfElectrons() >= 1 ) && ( event.numberOfTaus() >= 1 ) ){
-        if( event.passTriggers_et() ) return true;
-    }
 
     return false;
 }
@@ -206,12 +207,16 @@ bool ttZ::passPtCuts( const Event& event ){
     //assume leptons were ordered while applying baseline selection
     
     //leading lepton
-    if( event.lepton( 0 ).isMuon() && event.lepton( 0 ).pt() <= 20 ) return false;
-    if( event.lepton( 0 ).isElectron() && event.lepton( 0 ).pt() <= 25 ) return false;
+    if( event.lepton( 0 ).isMuon() && event.lepton( 0 ).pt() <= 40 ) return false;
+    if( event.lepton( 0 ).isElectron() && event.lepton( 0 ).pt() <= 40 ) return false;
 
     //subleading lepton
-    if( event.lepton( 1 ).isMuon() && event.lepton( 1 ).pt() <= 10 ) return false;
-    if( event.lepton( 1 ).isElectron() && event.lepton( 1 ).pt() <= 15 ) return false;
+    if( event.lepton( 1 ).isMuon() && event.lepton( 1 ).pt() <= 20 ) return false;
+    if( event.lepton( 1 ).isElectron() && event.lepton( 1 ).pt() <= 20 ) return false;
+
+    //trailing lepton
+    if( event.lepton( 2 ).isMuon() && event.lepton( 2 ).pt() <= 10 ) return false;
+    if( event.lepton( 2 ).isElectron() && event.lepton( 2 ).pt() <= 10 ) return false;
     return true;
 }
 

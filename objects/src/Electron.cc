@@ -10,6 +10,7 @@ Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
     _passDoubleEGEmulation( treeReader._lElectronPassEmu[leptonIndex] ),
     _passConversionVeto( treeReader._lElectronPassConvVeto[leptonIndex] ),
     _numberOfMissingHits( treeReader._lElectronMissingHits[leptonIndex] ),
+    _ElectronChargeConst( treeReader._lElectronChargeConst[leptonIndex] ),
     _electronMVASummer16GP( treeReader._lElectronSummer16MvaGP[leptonIndex] ),
     _electronMVASummer16HZZ( treeReader._lElectronSummer16MvaHZZ[leptonIndex] ),
     _electronMVAFall17Iso( treeReader._lElectronMvaFall17Iso[leptonIndex] ),
@@ -41,6 +42,7 @@ Electron::Electron( const Electron& rhs ) :
 	_passDoubleEGEmulation( rhs._passDoubleEGEmulation ),
 	_passConversionVeto( rhs._passConversionVeto ),
 	_numberOfMissingHits( rhs._numberOfMissingHits ),
+    _ElectronChargeConst( rhs._ElectronChargeConst ),
 	_electronMVASummer16GP( rhs._electronMVASummer16GP ),
 	_electronMVASummer16HZZ( rhs._electronMVASummer16HZZ ),
 	_electronMVAFall17Iso( rhs._electronMVAFall17Iso ),
@@ -65,6 +67,7 @@ Electron::Electron( Electron&& rhs ) noexcept :
     _passDoubleEGEmulation( rhs._passDoubleEGEmulation ),
     _passConversionVeto( rhs._passConversionVeto ),
     _numberOfMissingHits( rhs._numberOfMissingHits ),
+    _ElectronChargeConst( rhs._ElectronChargeConst ),
     _electronMVASummer16GP( rhs._electronMVASummer16GP ),
     _electronMVASummer16HZZ( rhs._electronMVASummer16HZZ ),
     _electronMVAFall17Iso( rhs._electronMVAFall17Iso ),
@@ -87,7 +90,7 @@ std::ostream& Electron::print( std::ostream& os ) const{
     os << "Electron : ";
     LightLepton::print( os );
     os << " / passChargeConsistency = " << _passChargeConsistency << " / passDoubleEGEmulation = " << _passDoubleEGEmulation << " / passConversionVeto = " << _passConversionVeto <<
-        " / numberOfMissingHits = " << _numberOfMissingHits << " / electronMVASummer16GP = " << _electronMVASummer16GP << " / electronMVASummer16HZZ = " << _electronMVASummer16HZZ <<
+        " / numberOfMissingHits = " << _numberOfMissingHits << " / _ElectronChargeConst = " << _ElectronChargeConst << " / electronMVASummer16GP = " << _electronMVASummer16GP << " / electronMVASummer16HZZ = " << _electronMVASummer16HZZ <<
         " / electronMVAFall17Iso = " << _electronMVAFall17Iso << " / electronMVAFall17NoIso = " << _electronMVAFall17NoIso << " / passElectronMVAFall17NoIsoLoose = " << _passElectronMVAFall17NoIsoLoose <<
         " / passElectronMVAFall17NoIsoWP90 = " << _passElectronMVAFall17NoIsoWP90 << " / passElectronMVAFall17NoIsoWP80 = " << _passElectronMVAFall17NoIsoWP80 << " / etaSuperCluster = " << _etaSuperCluster <<
         " / hOverE = " << _hOverE << " / inverseEMinusInverseP = " << _inverseEMinusInverseP << " / sigmaIEtaEta = " << _sigmaIEtaEta;

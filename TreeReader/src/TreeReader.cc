@@ -312,6 +312,15 @@ Event TreeReader::buildEvent( const Sample& samp, long unsigned entry, const boo
 
 Event TreeReader::buildEvent( long unsigned entry, const bool readIndividualTriggers, const bool readIndividualMetFilters ){
     GetEntry( entry );
+//    _nL     = int(this->_nLChar    );
+//    _nMu    = int(this->_nMuChar   );
+//    _nEle   = int(this->_nEleChar  );
+//    _nLight = int(this->_nLightChar);
+//    _nTau   = int(this->_nTauChar  );
+//    _nVertex     = int(this->_nVertexChar );    
+//    _nJets       = int(this->_nJetsChar );
+//    _nLheWeights = int(this->_nLheWeightsChar );
+//    _nPsWeights  = int(this->_nPsWeightsChar );
     return Event( *this, readIndividualTriggers, readIndividualMetFilters );
 }
 
@@ -341,6 +350,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_runNb", &_runNb, &b__runNb);
     _currentTreePtr->SetBranchAddress("_lumiBlock", &_lumiBlock, &b__lumiBlock);
     _currentTreePtr->SetBranchAddress("_eventNb", &_eventNb, &b__eventNb);
+//    _currentTreePtr->SetBranchAddress("_nVertex", &_nVertexChar, &b__nVertex);    
     _currentTreePtr->SetBranchAddress("_nVertex", &_nVertex, &b__nVertex);    
     _currentTreePtr->SetBranchAddress("_passTrigger_e", &_passTrigger_e, &b__passTrigger_e);
     _currentTreePtr->SetBranchAddress("_passTrigger_ee", &_passTrigger_ee, &b__passTrigger_ee);
@@ -356,6 +366,11 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_passTrigger_FR", &_passTrigger_FR, &b__passTrigger_FR);
     _currentTreePtr->SetBranchAddress("_passTrigger_FR_iso", &_passTrigger_FR_iso, &b__passTrigger_FR_iso);
     _currentTreePtr->SetBranchAddress("_passMETFilters", &_passMETFilters, &b__passMETFilters);
+//    _currentTreePtr->SetBranchAddress("_nL", &_nLChar, &b__nL);
+//    _currentTreePtr->SetBranchAddress("_nMu", &_nMuChar, &b__nMu);
+//    _currentTreePtr->SetBranchAddress("_nEle", &_nEleChar, &b__nEle);
+//    _currentTreePtr->SetBranchAddress("_nLight", &_nLightChar, &b__nLight);
+//    _currentTreePtr->SetBranchAddress("_nTau", &_nTauChar, &b__nTau);
     _currentTreePtr->SetBranchAddress("_nL", &_nL, &b__nL);
     _currentTreePtr->SetBranchAddress("_nMu", &_nMu, &b__nMu);
     _currentTreePtr->SetBranchAddress("_nEle", &_nEle, &b__nEle);
@@ -441,6 +456,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_lMuonSegComp", _lMuonSegComp, &b__lMuonSegComp);
     _currentTreePtr->SetBranchAddress("_lMuonTrackPt", _lMuonTrackPt, &b__lMuonTrackPt);
     _currentTreePtr->SetBranchAddress("_lMuonTrackPtErr", _lMuonTrackPtErr, &b__lMuonTrackPtErr);
+//    _currentTreePtr->SetBranchAddress("_nJets", &_nJetsChar, &b__nJets);
     _currentTreePtr->SetBranchAddress("_nJets", &_nJets, &b__nJets);
     _currentTreePtr->SetBranchAddress("_jetPt", _jetPt, &b__jetPt);
     _currentTreePtr->SetBranchAddress("_jetSmearedPt", _jetSmearedPt, &b__jetSmearedPt);
@@ -488,8 +504,10 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     
     if( containsGeneratorInfo() ){
         _currentTreePtr->SetBranchAddress("_weight", &_weight, &b__weight);
+//        _currentTreePtr->SetBranchAddress("_nLheWeights", &_nLheWeightsChar, &b__nLheWeights);
         _currentTreePtr->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);
         _currentTreePtr->SetBranchAddress("_lheWeight", _lheWeight, &b__lheWeight);
+//        _currentTreePtr->SetBranchAddress("_nPsWeights", &_nPsWeightsChar, &b__nPsWeights);
         _currentTreePtr->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
         _currentTreePtr->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
         _currentTreePtr->SetBranchAddress("_nTrueInt", &_nTrueInt, &b__nTrueInt);
@@ -606,6 +624,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_lElectronHOverE",              &_lElectronHOverE,              "_lElectronHOverE[_nLight]/D");
     outputTree->Branch("_lElectronSigmaIetaIeta",       &_lElectronSigmaIetaIeta,       "_lElectronSigmaIetaIeta[_nLight]/D");
     outputTree->Branch("_leptonMvaTTH",                 &_leptonMvaTTH,                 "_leptonMvaTTH[_nLight]/D");
+//    outputTree->Branch("_leptonMvatZqTTV",                 &_leptonMvatZq,                 "_leptonMvatZqTTV[_nLight]/D");
     outputTree->Branch("_leptonMvatZq",                 &_leptonMvatZq,                 "_leptonMvatZq[_nLight]/D");
     outputTree->Branch("_lPOGVeto",                     &_lPOGVeto,                     "_lPOGVeto[_nL]/O");
     outputTree->Branch("_lPOGLoose",                    &_lPOGLoose,                    "_lPOGLoose[_nL]/O");
@@ -643,7 +662,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
 
     outputTree->Branch("_relIso",                       &_relIso,                       "_relIso[_nLight]/D");
     outputTree->Branch("_relIso0p4",                    &_relIso0p4,                    "_relIso0p4[_nLight]/D");
-    outputTree->Branch("_relIso0p4MuDeltaBeta",         &_relIso0p4MuDeltaBeta,         "_relIso0p4MuDeltaBeta[_nMu]/D");
+    if( !is2018() ) outputTree->Branch("_relIso0p4MuDeltaBeta",         &_relIso0p4MuDeltaBeta,         "_relIso0p4MuDeltaBeta[_nMu]/D");
     outputTree->Branch("_miniIso",                      &_miniIso,                      "_miniIso[_nLight]/D");
     outputTree->Branch("_miniIsoCharged",               &_miniIsoCharged,               "_miniIsoCharged[_nLight]/D");
     outputTree->Branch("_ptRel",                        &_ptRel,                        "_ptRel[_nLight]/D");

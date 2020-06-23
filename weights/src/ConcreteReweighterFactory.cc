@@ -210,7 +210,7 @@ CombinedReweighter ttZReweighterFactory::buildReweighter( const std::string& wei
     combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepCSV >( weightDirectory, bTagSFPath, bTagWP, bTagEffMCHist_udsg ) );
 
     //make prefire Reweighter
-    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
+//    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
     return combinedReweighter;
 }

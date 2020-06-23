@@ -9,7 +9,8 @@ Muon::Muon( const TreeReader& treeReader, const unsigned leptonIndex ):
     _segmentCompatibility( treeReader._lMuonSegComp[leptonIndex] ),
     _trackPt( treeReader._lMuonTrackPt[leptonIndex] ),
     _trackPtError( treeReader._lMuonTrackPtErr[leptonIndex] ),
-    _relIso0p4DeltaBeta( treeReader._relIso0p4MuDeltaBeta[leptonIndex] ),
+//    _relIso0p4DeltaBeta( treeReader._relIso0p4MuDeltaBeta[leptonIndex] ),
+    _relIso0p4DeltaBeta( treeReader._relIso[leptonIndex] ),
     _isLoosePOGMuon( treeReader._lPOGLoose[leptonIndex] ),
     _isMediumPOGMuon( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGMuon( treeReader._lPOGTight[leptonIndex] )

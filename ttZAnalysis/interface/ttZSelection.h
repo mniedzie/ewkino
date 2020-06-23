@@ -10,13 +10,15 @@
 namespace ttZ{
     void applyBaselineObjectSelection( Event& event, const bool allowUncertainties = false );
     bool passLowMllVeto( const Event& event, const double vetoValue = 12. );
-    bool passBaselineSelection( Event& event, const bool allowUncertainties = false, const bool bVeto = true, const bool mllVeto = true );
+    bool passBaselineSelection( Event& event, const bool allowUncertainties = false, const bool mllVeto = true );
     JetCollection variedJetCollection( const Event& event, const std::string& uncertainty );
     JetCollection::size_type numberOfVariedBJets( const Event& event, const std::string& uncertainty );
+    JetCollection::size_type numberOfVariedJets( const Event& event, const std::string& uncertainty );
     Met variedMet( const Event& event, const std::string& uncertainty );
     bool passVariedSelection( const Event& event, const std::string& uncertainty );
     bool passVariedSelectionWZCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionTTZCR( Event& event, const std::string& uncertainty );
+    bool passSelectionTTZ( Event& event, const std::string& uncertainty );
     bool passVariedSelectionNPCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionXGammaCR( Event& event, const std::string& uncertainty );
     bool passTriggerSelection( const Event& event );

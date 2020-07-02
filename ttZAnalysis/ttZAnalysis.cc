@@ -17,6 +17,7 @@
 //include ewkino specific code
 #include "interface/ttZSelection.h"
 #include "interface/ttZVariables.h"
+//#include "interface/ttZSearchRegions.h"
 
 
 //compare floating points
@@ -32,7 +33,7 @@ std::vector< HistInfo > makeDistributionInfo(){
     std::vector< HistInfo > histInfoVec;
     histInfoVec = {
 
-        HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 18, 25, 205 ),
+        HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 13, 40, 300 ),
         HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 14, 15, 155 ),
         HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 14, 15, 155 ),
 
@@ -41,12 +42,16 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "leptonEtaTrailing", "|#eta|^{trailing lepton}", 10, 0, 2.5 ),
 
         HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 200 ),
+//        HistInfo( "nTI", "nTI (GeV)", 100, 0, 100 ),
         HistInfo( "mll", "M_{ll} (GeV)", 10, 75, 105 ),
         HistInfo( "ht", "H_{T} (GeV)", 10, 0, 800 ),
 
         HistInfo( "nJets", "number of jets", 8, 0, 8 ),
         HistInfo( "nBJets", "number of b-jets (medium deep CSV)", 5, 0, 5 ),
-        HistInfo( "nVertex", "number of vertices", 30, 0, 70 )
+        HistInfo( "nVertex", "number of vertices", 30, 0, 70 ),
+
+        HistInfo( "ttZSR", "Signal Regions", 14, 0, 14 ),
+        HistInfo( "ttZFlav", "Lepton flavors", 4, 0, 4 )
     };
     return histInfoVec;
 }
@@ -56,6 +61,8 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
     
     auto varMap = ttZ::computeVariables( event, uncertainty );
     std::vector< double > fillValues;
+    unsigned searchttZ = ttZ::SR_main( event.numberOfTightLeptons(), ttZ::numberOfVariedJets( event, uncertainty ), ttZ::numberOfVariedBJets( event, uncertainty ) );
+    unsigned ttZFlav = ttZ::ttZFlavPlot( event );
     fillValues = {
         event.lepton( 0 ).pt(),
         event.lepton( 1 ).pt(),
@@ -66,23 +73,30 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
         event.lepton( 2 ).absEta(),
 
         varMap.at("met"),
+//        varMap.at("nTI"),
         varMap.at("mll"),
         varMap.at("ht"),
 
         varMap.at("numberOfJets"),
         varMap.at("numberOfBJets"),
-        static_cast< double >( event.numberOfVertices() )
+        static_cast< double >( event.numberOfVertices() ),
+
+        static_cast< double >( searchttZ ),
+        static_cast< double >( ttZFlav ),
     };
     
     return fillValues;
 }
 
 
-
+//auto varMap = ewkino::computeVariables( event, uncertainty );
+//unsigned searchROld = ewkino::SR_EWK_3lOSSF_old( varMap.at("mtW"), varMap.at("met"), varMap.at("mll") );
+//unsigned searchRNew = ewkino::SR_EWK_3lOSSF_new( varMap.at("mll"), varMap.at("mtW"), varMap.at("mt3l"), varMap.at("met"), varMap.at("ht") );
 
 
 
 void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
+
 
     analysisTools::checkYearString( year );
 
@@ -94,6 +108,7 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 //        { "NP", ttZ::passVariedSelectionNPCR }
 //    };
     auto passSelection = ttZ::passSelectionTTZ;
+//    auto passNPSelection = ttZ::passSelectionTTZNP;
 //    auto passSelection = ttZ::passVariedSelectionTTZCR;
 
 
@@ -102,7 +117,7 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
     TreeReader treeReader( "sampleLists/samples_ttZ_" + year + ".txt", sampleDirectoryPath );
     treeReader.removeBSMSignalSamples();
 
-    //build ewkino reweighter
+    //build ttZ reweighter
     std::cout << "building reweighter" << std::endl;
     std::shared_ptr< ReweighterFactory >reweighterFactory( new ttZReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
@@ -139,7 +154,7 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
         }
     }
 
-    const std::vector< std::string > shapeUncNames = { "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "lepton_reco", "lepton_id"}; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
 //    const std::vector< std::string > shapeUncNames = { "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id"}; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
@@ -173,10 +188,11 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
             Event event = treeReader.buildEvent( entry );
             
-            //if(entry > treeReader.numberOfEntries() / 10) break;
+            if(entry > treeReader.numberOfEntries()/100) break;
+//            if(entry > 10000) break;
             //apply baseline selection
+            if( event.isMC()) std::cout << event.generatorInfo().numberOfTrueInteractions() << std::endl;
             if( !ttZ::passBaselineSelection( event, true, true ) ) continue;
-
 
             //apply lepton pT cuts
             if( !ttZ::passPtCuts( event ) ) continue;
@@ -187,7 +203,6 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 
             //remove photon overlap
             if( !ttZ::passPhotonOverlapRemoval( event ) ) continue;
-            if( event.isData() ) std::cout << "data passed photon overlap removal " <<  std::endl;
 
             //require MC events to only contain prompt leptons
             if( event.isMC() && !ttZ::leptonsArePrompt( event ) ) continue;
@@ -208,11 +223,8 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 
             //fill nominal histograms
             if( passSelection( event, "nominal" ) ){
-                if( event.isData() ) std::cout << "data passed ttZ selection " <<  std::endl;
                 auto fillValues = buildFillingVector( event, "nominal" );
                 for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-                    if( event.isData() ) std::cout << "data passed into filling hists" <<  std::endl;
-//			        std::cout << "test weight = " << weight <<  std::endl;
                     histogram::fillValue( histograms[ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
                 }
 
@@ -305,17 +317,17 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
                 histogram::fillValue( histogramsUncUp[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleUp );
             }
 
-            //fill pileup down histograms
-            double weightPileupDown = reweighter[ "pileup" ]->weightDown( event ) / reweighter[ "pileup" ]->weight( event );
-            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-                histogram::fillValue( histogramsUncDown[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupDown );
-            }
-
-            //fill pileup up histograms
-            double weightPileupUp = reweighter[ "pileup" ]->weightUp( event ) / reweighter[ "pileup" ]->weight( event );
-            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-                histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
-            }
+//            //fill pileup down histograms
+//            double weightPileupDown = reweighter[ "pileup" ]->weightDown( event ) / reweighter[ "pileup" ]->weight( event );
+//            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+//                histogram::fillValue( histogramsUncDown[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupDown );
+//            }
+//
+//            //fill pileup up histograms
+//            double weightPileupUp = reweighter[ "pileup" ]->weightUp( event ) / reweighter[ "pileup" ]->weight( event );
+//            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+//                histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
+//            }
 
             //fill b-tag down histograms
             //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
@@ -344,17 +356,17 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
                 histogram::fillValue( histogramsUncUp[ "bTag_light_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagLightUp );
             }
 
-            //fill prefiring down histograms
-//            double weightPrefireDown = reweighter[ "prefire" ]->weightDown( event ) / reweighter[ "prefire" ]->weight( event );
-//            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                histogram::fillValue( histogramsUncDown[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireDown );
-//            }
-//        
-//            //fill prefiring up histograms
-//            double weightPrefireUp = reweighter[ "prefire" ]->weightUp( event ) / reweighter[ "prefire" ]->weight( event );
-//            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                histogram::fillValue( histogramsUncUp[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireUp );
-//            }
+          //fill prefiring down histograms
+            double weightPrefireDown = reweighter[ "prefire" ]->weightDown( event ) / reweighter[ "prefire" ]->weight( event );
+            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                histogram::fillValue( histogramsUncDown[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireDown );
+            }
+        
+            //fill prefiring up histograms
+            double weightPrefireUp = reweighter[ "prefire" ]->weightUp( event ) / reweighter[ "prefire" ]->weight( event );
+            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                histogram::fillValue( histogramsUncUp[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireUp );
+            }
 
             double recoWeightDown;
             double recoWeightUp;
@@ -407,7 +419,8 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
       
 
     //merge process histograms
-    std::vector< std::string > proc = {"Data", "ttZ", "ttH", "ttX", "WZ", "Xgamma", "ZZ", "rare",  };
+//    std::vector< std::string > proc = {"Data", "ttZ", "WZ", "Xgamma", "ZZ", "Nonprompt",  };
+    std::vector< std::string > proc = {"Data", "ttZ", "ttH", "ttX", "WZ", "Xgamma", "ZZ", "rare", "Nonprompt",  };
     std::vector< std::vector< TH1D* > > mergedHistograms( histInfoVector.size(), std::vector< TH1D* >( proc.size() ) );
     //size_t numberOfBackgrounds = 0;
     //for( const auto& s : sampleVec ){
@@ -586,7 +599,8 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 int main( int argc, char* argv[] ){
     setTDRStyle();
 //    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/";
-    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/mniedzie/old_ntuples/ntuples_ttV_2017/";
+//    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/mniedzie/old_ntuples/ntuples_ttV_2017/";
+    const std::string sampleDirectoryPath = "/user/mniedzie/Work/ntuples_ttz_new/";
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     
     //run specific model and mass splitting and year

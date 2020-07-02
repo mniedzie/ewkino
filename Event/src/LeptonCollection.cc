@@ -13,16 +13,6 @@
 LeptonCollection::LeptonCollection( const TreeReader& treeReader ){
 
     //add muons to lepton collection
-    /////////std::cout << " test _nLChar     " << treeReader._nLChar     << std::endl;
-    /////////std::cout << " test _nMuChar    " << treeReader._nMuChar    << std::endl;
-    /////////std::cout << " test _nEleChar   " << treeReader._nEleChar   << std::endl;
-    /////////std::cout << " test _nLightChar " << treeReader._nLightChar << std::endl;
-    /////////std::cout << " test _nTauChar   " << treeReader._nTauChar   << std::endl;
-    /////////std::cout << " test _nL     " << treeReader._nL     << std::endl;
-    /////////std::cout << " test _nMu    " << treeReader._nMu    << std::endl;
-    /////////std::cout << " test _nEle   " << treeReader._nEle   << std::endl;
-    /////////std::cout << " test _nLight " << treeReader._nLight << std::endl;
-    /////////std::cout << " test _nTau   " << treeReader._nTau   << std::endl;
     for( unsigned m = 0; m < treeReader._nMu; ++m){
         push_back( Muon( treeReader, m ) );
     }

@@ -19,6 +19,7 @@ namespace ttZ{
     bool passVariedSelectionWZCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionTTZCR( Event& event, const std::string& uncertainty );
     bool passSelectionTTZ( Event& event, const std::string& uncertainty );
+    bool passSelectionTTZNP( Event& event, const std::string& uncertainty );
     bool passVariedSelectionNPCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionXGammaCR( Event& event, const std::string& uncertainty );
     bool passTriggerSelection( const Event& event );
@@ -27,6 +28,9 @@ namespace ttZ{
     bool leptonsAreTight( const Event& event );
     double fakeRateWeight( const Event& event, const std::shared_ptr< TH2 >& muonMap, const std::shared_ptr< TH2 >& electronMap );
     bool passPhotonOverlapRemoval( const Event& event );
+
+    unsigned SR_main(const int nL, const int nJ, const int nB);
+    unsigned ttZFlavPlot( const Event& event );
 }
 
 #endif

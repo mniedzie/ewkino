@@ -13,10 +13,10 @@
 void ttZ::applyBaselineObjectSelection( Event& event, const bool allowUncertainties ){
 
     event.selectLooseLeptons();
-    event.cleanElectronsFromLooseMuons();
-    event.cleanTausFromLooseLightLeptons();
-    event.cleanJetsFromFOLeptons();
     event.removeTaus();
+    event.cleanElectronsFromLooseMuons();
+//    event.cleanTausFromLooseLightLeptons();
+    event.cleanJetsFromFOLeptons();
     if( allowUncertainties ){
         event.jetCollection().selectGoodAnyVariationJets();
     } else {
@@ -46,13 +46,17 @@ bool ttZ::passLowMllVeto( const Event& event, const double vetoValue ){
 bool ttZ::passBaselineSelection( Event& event, const bool allowUncertainties, const bool mllVeto ){
     
 	// only loose leptons are selected
+//            if( !event.isData() ) std::cout << "mc in baseline selection funciton" <<  std::endl;
     applyBaselineObjectSelection( event, allowUncertainties );
 	// accept event with at least 3 loose leptons
     if( event.numberOfLeptons() < 3 ) return false;
+//            if( !event.isData() ) std::cout << "mc with 3 loose leptons " <<  std::endl;
     if( mllVeto && !passLowMllVeto( event, 12 ) ) return false;
+//            if( !event.isData() ) std::cout << "mc with no light mll" <<  std::endl;
 
     event.selectFOLeptons();
     if( event.numberOfLeptons() < 3 ) return false;
+//            if( !event.isData() ) std::cout << "mc with 3 FO leptons" <<  std::endl;
     event.applyLeptonConeCorrection();
     event.sortLeptonsByPt();
     return true;
@@ -142,16 +146,28 @@ bool ttZ::passVariedSelectionTTZCR( Event& event, const std::string& uncertainty
 }
 
 bool ttZ::passSelectionTTZ( Event& event, const std::string& uncertainty ){
-            if( event.isData() ) std::cout << "data in selection funciton" <<  std::endl;
-    if( numberOfVariedJets( event, uncertainty ) < 2 ) return false;
-            if( event.isData() ) std::cout << "data passed number of jets" <<  std::endl;
-    if( !( event.hasOSSFLightLeptonPair() ) ) return false;
-            if( event.isData() ) std::cout << "data passed ossf light lep pair" <<  std::endl;
-    if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) return false;
-            if( event.isData() ) std::cout << "data passed z boson candidate" <<  std::endl;
+    if ( numberOfVariedJets( event, uncertainty ) < 1 ) return false;
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+    if ( event.numberOfFOLeptons() == 3 && ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) ) return false;
+    if ( event.numberOfFOLeptons() == 4 && ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 20 ) ) return false;
+    if ( event.numberOfFOLeptons() < 3 ) return false;
+    if ( event.numberOfFOLeptons() == 3 && numberOfVariedBJets( event, uncertainty ) > 0 && numberOfVariedJets( event, uncertainty ) < 2  ) return false;
+    if ( event.numberOfFOLeptons() == 4 && numberOfVariedJets( event, uncertainty ) < 2 ) return false;
     return true;
 }
 
+
+bool ttZ::passSelectionTTZNP( Event& event, const std::string& uncertainty ){
+    if ( numberOfVariedJets( event, uncertainty ) < 1 ) return false;
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+    if ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) return false;
+    if ( event.numberOfFOLeptons() == 3 && ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) ) return false;
+    if ( event.numberOfFOLeptons() == 4 && ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 20 ) ) return false;
+    if ( event.numberOfFOLeptons() < 3 ) return false;
+    if ( event.numberOfFOLeptons() == 3 && numberOfVariedBJets( event, uncertainty ) > 0 && numberOfVariedJets( event, uncertainty ) < 2  ) return false;
+    if ( event.numberOfFOLeptons() == 4 && numberOfVariedJets( event, uncertainty ) < 2 ) return false;
+    return true;
+}
 
 bool ttZ::passVariedSelectionNPCR( Event& event, const std::string& uncertainty ){
     static constexpr size_t numberOfBJets = 1;
@@ -170,33 +186,43 @@ bool ttZ::passVariedSelectionXGammaCR( Event& event, const std::string& uncertai
 
 
 bool ttZ::passTriggerSelection( const Event& event ){
-    if( event.numberOfMuons() >= 1 ){
-        if( event.passTriggers_m() ) return true;
-    } 
-    if( event.numberOfMuons() >= 2 ){
-        if( event.passTriggers_mm() ) return true;
-    }
-    if( event.numberOfMuons() >= 3 ){
-        if( event.passTriggers_mmm() ) return true;
-    }
-    if( event.numberOfElectrons() >= 1 ){
-        if( event.passTriggers_e() ) return true;
-    }
-    if( event.numberOfElectrons() >= 2 ){
-        if( event.passTriggers_ee() ) return true;
-    }
-    if( event.numberOfElectrons() >= 3 ){
-        if( event.passTriggers_eee() ) return true;
-    }
-    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 1 ) ){
-        if( event.passTriggers_em() ) return true;
-    }
-    if( ( event.numberOfMuons() >= 2 ) && ( event.numberOfElectrons() >= 1 ) ){
-        if( event.passTriggers_emm() ) return true;
-    }
-    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 2 ) ){
-        if( event.passTriggers_eem() ) return true;
-    }
+//    if( event.numberOfMuons() >= 1 ){
+//        if( event.passTriggers_m() ) return true;
+//    } 
+//    if( event.numberOfMuons() >= 2 ){
+//        if( event.passTriggers_mm() ) return true;
+//    }
+//    if( event.numberOfMuons() >= 3 ){
+//        if( event.passTriggers_mmm() ) return true;
+//    }
+//    if( event.numberOfElectrons() >= 1 ){
+//        if( event.passTriggers_e() ) return true;
+//    }
+//    if( event.numberOfElectrons() >= 2 ){
+//        if( event.passTriggers_ee() ) return true;
+//    }
+//    if( event.numberOfElectrons() >= 3 ){
+//        if( event.passTriggers_eee() ) return true;
+//    }
+//    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 1 ) ){
+//        if( event.passTriggers_em() ) return true;
+//    }
+//    if( ( event.numberOfMuons() >= 2 ) && ( event.numberOfElectrons() >= 1 ) ){
+//        if( event.passTriggers_emm() ) return true;
+//    }
+//    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 2 ) ){
+//        if( event.passTriggers_eem() ) return true;
+//    }
+
+        if( event.passTriggers_m() || 
+		    event.passTriggers_mm() ||
+            event.passTriggers_mmm() ||
+            event.passTriggers_e() ||
+            event.passTriggers_ee() ||
+            event.passTriggers_eee() ||
+            event.passTriggers_em() ||
+            event.passTriggers_emm() ||
+            event.passTriggers_eem() ) return true;
 
     return false;
 }
@@ -293,4 +319,52 @@ double ttZ::fakeRateWeight( const Event& event, const std::shared_ptr< TH2 >& mu
         weight *= - fr / ( 1. - fr );
     }
     return weight;
+}
+
+
+
+unsigned ttZ::SR_main(const int nL, const int nJ, const int nB){ //3 light leptons, OSSF
+    unsigned sr = 0;
+    if( nL == 3){
+        if( nB == 0 ){
+            if ( nJ == 2 ) sr += 1;
+            else if ( nJ == 3 ) sr+= 2;
+            else if ( nJ > 3 ) sr+= 3;
+        }
+        else if( nB == 1 ){
+            sr += 4;
+            if ( nJ == 3 ) sr += 1;
+            else if ( nJ == 4 ) sr+= 2;
+            else if ( nJ > 4 ) sr+= 3;
+        }
+        else{
+            sr += 8;
+            if ( nJ == 3 ) sr += 1;
+            else if ( nJ == 4 ) sr+= 2;
+            else if ( nJ > 4 ) sr+= 3;
+        }
+    }
+    else if ( nL == 4 ){
+        sr += 12;
+        if ( nB > 0 ) sr += 1;
+    }
+    return sr;
+}
+
+
+
+unsigned ttZ::ttZFlavPlot( const Event& event ){
+    if( event.numberOfLightLeptons() == 3 ){
+        if( event.numberOfMuons() == 3 ) return 0;
+        if( event.numberOfMuons() == 2 ) return 1;
+        if( event.numberOfMuons() == 1 ) return 2;
+        if( event.numberOfElectrons() == 3 ) return 3;
+    }
+    if( event.numberOfLightLeptons() == 4 ){
+        if( event.numberOfMuons() == 4 ) return 0;
+        if( event.numberOfMuons() == 3 ) return 1;
+        if( event.numberOfElectrons() == 4 ) return 3;
+        if( event.numberOfElectrons() > 2 ) return 2;
+    }
+    return 0;
 }

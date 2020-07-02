@@ -114,6 +114,9 @@ double ReweighterPileup::weight( const Event& event, const std::map< std::string
         throw std::invalid_argument( "No pileup weights for sample " + event.sample().uniqueName() + " found, this sample was probably not present in the vector used to construct the Reweighter." );
     }
     TH1* histPtr = it->second.get();
+//	if ( event.generatorInfo().numberOfTrueInteractions()>80 ) std::cout << "nTrueInteractions = " << event.generatorInfo().numberOfTrueInteractions() << std::endl;
+//	else if ( event.generatorInfo().numberOfTrueInteractions()<2 ) std::cout << "nTrueInteractions = " << event.generatorInfo().numberOfTrueInteractions() << std::endl;
+//	else  std::cout << "nTrueInteractions = " << event.generatorInfo().numberOfTrueInteractions() << std::endl;
     return histogram::contentAtValue( histPtr, event.generatorInfo().numberOfTrueInteractions() );
 }
 

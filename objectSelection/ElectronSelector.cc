@@ -25,7 +25,7 @@ bool ElectronSelector::isLooseBase() const{
     if( electronPtr->sip3d() >= 8 ) return false;
     if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( electronPtr->miniIso() >= 0.4 ) return false;
-    if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+//    if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     return true;
 }
 

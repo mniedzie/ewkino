@@ -7,7 +7,6 @@ import sys
 from jobSubmission import submitQsubJob, initializeJobScript
 from fileListing import walkLimitedDepth, listSampleDirectories
 
-
 #list all directories containing unmerged skimmed ntuples
 def listSkimmedSampleDirectories( input_directory ):
     for _, sample in listSampleDirectories( input_directory, 'ntuples_skimmed' ):

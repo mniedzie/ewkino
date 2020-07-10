@@ -42,7 +42,7 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "leptonEtaTrailing", "|#eta|^{trailing lepton}", 10, 0, 2.5 ),
 
         HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 200 ),
-//        HistInfo( "nTI", "nTI (GeV)", 100, 0, 100 ),
+        HistInfo( "nTI", "nTI (GeV)", 100, 0, 100 ),
         HistInfo( "mll", "M_{ll} (GeV)", 10, 75, 105 ),
         HistInfo( "ht", "H_{T} (GeV)", 10, 0, 800 ),
 
@@ -73,7 +73,7 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
         event.lepton( 2 ).absEta(),
 
         varMap.at("met"),
-//        varMap.at("nTI"),
+        varMap.at("nTI"),
         varMap.at("mll"),
         varMap.at("ht"),
 
@@ -108,14 +108,11 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 //        { "NP", ttZ::passVariedSelectionNPCR }
 //    };
     auto passSelection = ttZ::passSelectionTTZ;
-//    auto passNPSelection = ttZ::passSelectionTTZNP;
-//    auto passSelection = ttZ::passVariedSelectionTTZCR;
 
 
     //build TreeReader and loop over samples
     std::cout << "building treeReader" << std::endl;
     TreeReader treeReader( "sampleLists/samples_ttZ_" + year + ".txt", sampleDirectoryPath );
-    treeReader.removeBSMSignalSamples();
 
     //build ttZ reweighter
     std::cout << "building reweighter" << std::endl;
@@ -154,7 +151,7 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
         }
     }
 
-    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
 //    const std::vector< std::string > shapeUncNames = { "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id"}; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
@@ -180,6 +177,10 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 
     std::cout << "event loop" << std::endl;
 
+    bool FRfromMC = true;
+
+    std::cout << "Fake rate from data? " << (FRfromMC ? "no":"yes") << std::endl;
+
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
         treeReader.initSample();
 
@@ -188,10 +189,10 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
             Event event = treeReader.buildEvent( entry );
             
-            if(entry > treeReader.numberOfEntries()/100) break;
+            if(entry > treeReader.numberOfEntries()/50) break;            
 //            if(entry > 10000) break;
+//            if(entry > 1000) break;
             //apply baseline selection
-            if( event.isMC()) std::cout << event.generatorInfo().numberOfTrueInteractions() << std::endl;
             if( !ttZ::passBaselineSelection( event, true, true ) ) continue;
 
             //apply lepton pT cuts
@@ -204,8 +205,15 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
             //remove photon overlap
             if( !ttZ::passPhotonOverlapRemoval( event ) ) continue;
 
+            //require the right number of tight and FO(loose) leptons in 3(4) lepton events
+            if( !ttZ::passSelectionLNumber( event ) ) continue;
+
             //require MC events to only contain prompt leptons
-            if( event.isMC() && !ttZ::leptonsArePrompt( event ) ) continue;
+            size_t fillIndex = sampleIndex;
+            if( event.isMC() && !ttZ::leptonsArePrompt( event ) ){
+                if ( FRfromMC ) fillIndex = treeReader.numberOfSamples();
+                else continue;
+            }
 
             //apply scale-factors and reweighting
             double weight = event.weight();
@@ -214,14 +222,23 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
             }
 
             //apply fake-rate weight
-            size_t fillIndex = sampleIndex;
             if( !ttZ::leptonsAreTight( event ) ){
+                if( FRfromMC ) continue;
                 fillIndex = treeReader.numberOfSamples();
                 weight *= ttZ::fakeRateWeight( event, frMapMuons, frMapElectrons );
                 if( event.isMC() ) weight *= -1.;
             }
 
+            // in 4L nonptrompt is calcualted from MC, should add WZ to nonprompt too.
+            if( event.isMC() && event.numberOfTightLeptons() == 4 && !ttZ::leptonsArePrompt( event ) ){
+                fillIndex = treeReader.numberOfSamples();
+            }
+            
+            // for nonprompt from MC, reject events with 
+            if( event.numberOfTightLeptons() < 3 && FRfromMC ) continue;
+
             //fill nominal histograms
+//            if( passSelection( event, "nominal" ) || ttZ::passSelectionWZCR( event, "nominal" ) ){
             if( passSelection( event, "nominal" ) ){
                 auto fillValues = buildFillingVector( event, "nominal" );
                 for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
@@ -317,17 +334,17 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
                 histogram::fillValue( histogramsUncUp[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleUp );
             }
 
-//            //fill pileup down histograms
-//            double weightPileupDown = reweighter[ "pileup" ]->weightDown( event ) / reweighter[ "pileup" ]->weight( event );
-//            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                histogram::fillValue( histogramsUncDown[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupDown );
-//            }
-//
-//            //fill pileup up histograms
-//            double weightPileupUp = reweighter[ "pileup" ]->weightUp( event ) / reweighter[ "pileup" ]->weight( event );
-//            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
-//            }
+            //fill pileup down histograms
+            double weightPileupDown = reweighter[ "pileup" ]->weightDown( event ) / reweighter[ "pileup" ]->weight( event );
+            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                histogram::fillValue( histogramsUncDown[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupDown );
+            }
+
+            //fill pileup up histograms
+            double weightPileupUp = reweighter[ "pileup" ]->weightUp( event ) / reweighter[ "pileup" ]->weight( event );
+            for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
+            }
 
             //fill b-tag down histograms
             //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
@@ -420,7 +437,7 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 
     //merge process histograms
 //    std::vector< std::string > proc = {"Data", "ttZ", "WZ", "Xgamma", "ZZ", "Nonprompt",  };
-    std::vector< std::string > proc = {"Data", "ttZ", "ttH", "ttX", "WZ", "Xgamma", "ZZ", "rare", "Nonprompt",  };
+    std::vector< std::string > proc = {"Data", "ttZ", "ttX", "WZ", "Xgamma", "ZZ", "rare", "Nonprompt",  };
     std::vector< std::vector< TH1D* > > mergedHistograms( histInfoVector.size(), std::vector< TH1D* >( proc.size() ) );
     //size_t numberOfBackgrounds = 0;
     //for( const auto& s : sampleVec ){

@@ -21,7 +21,7 @@ std::map< std::string, double > ttZ::computeVariables( Event& event, const std::
     }
     std::map< std::string, double > ret = {
         { "met", variedMet.pt() },
-//        { "nTI", event.isData() ? 0 : event.generatorInfo().numberOfTrueInteractions() },
+        { "nTI", event.isData() ? 0 : event.generatorInfo().numberOfTrueInteractions() },
         { "mll", mll },
 //        { "mtW", mtW },
         { "ltmet", event.LT() + variedMet.pt() },
@@ -29,7 +29,8 @@ std::map< std::string, double > ttZ::computeVariables( Event& event, const std::
         { "mt3l", mt( leptonSum, variedMet ) },
         { "ht", variedJetCollection.scalarPtSum()},
         { "numberOfJets", variedJetCollection.size() },
-        { "numberOfBJets", variedJetCollection.numberOfTightBTaggedJets() }
+//        { "numberOfBJets", variedJetCollection.numberOfTightBTaggedJets() }
+        { "numberOfBJets", variedJetCollection.numberOfMediumBTaggedJets() }
     };
     return ret;
 }

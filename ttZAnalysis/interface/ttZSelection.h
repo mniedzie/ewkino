@@ -18,8 +18,11 @@ namespace ttZ{
     bool passVariedSelection( const Event& event, const std::string& uncertainty );
     bool passVariedSelectionWZCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionTTZCR( Event& event, const std::string& uncertainty );
+
+    bool passSelectionLNumber( Event& event );
     bool passSelectionTTZ( Event& event, const std::string& uncertainty );
-    bool passSelectionTTZNP( Event& event, const std::string& uncertainty );
+    bool passSelectionWZCR( Event& event, const std::string& uncertainty );
+
     bool passVariedSelectionNPCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionXGammaCR( Event& event, const std::string& uncertainty );
     bool passTriggerSelection( const Event& event );

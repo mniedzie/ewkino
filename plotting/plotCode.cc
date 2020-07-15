@@ -112,6 +112,22 @@ Color_t bkgColorHNL(const std::string& bkgName){
 }
 
 
+    std::vector< std::string > proc = {"Data", "ttZ", "ttX", "WZ", "Xgamma", "ZZ", "rare", "Nonprompt",  };
+Color_t bkgColorttZ(const std::string& bkgName){
+    if(bkgName == "non-prompt") return kBlue-9;
+    else if(bkgName == "nonprompt") return kBlue-9;
+    else if(bkgName == "Nonprompt") return kBlue-9;
+    else if(bkgName == "ttZ") return 91;
+    else if(bkgName == "ttX") return kRed-10;
+    else if(bkgName == "ttH") return kRed-10;
+    else if(bkgName == "WZ") return 51;
+    else if(bkgName == "Xgamma") return kGreen;
+    else if(bkgName == "ZZ") return kGreen+3;
+    else if(bkgName == "rare") return 8;
+    else return kBlack;
+}
+
+
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
@@ -135,6 +151,8 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
         return bkgColorHNL(bkgName);
     } else if(analysis == "ewkinoDilep"){
         return bkgColorEWKDilept(bkgName);
+    } else if(analysis == "ttZ"){
+        return bkgColorttZ(bkgName);
     } else{
         return bkgColorGeneral();
     }
@@ -329,7 +347,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
     
     //order background histograms by yield
-    yieldOrder(bkgClones, nBkg, isSMSignal);
+//    yieldOrder(bkgClones, nBkg, isSMSignal);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");

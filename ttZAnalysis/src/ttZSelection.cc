@@ -156,18 +156,16 @@ bool ttZ::passSelectionWZCR( Event& event, const std::string& uncertainty ){
 
 
 bool ttZ::passSelectionLNumber( Event& event ){
-    if ( event.numberOfTightLeptons() < 3 && event.numberOfFOLeptons() != 3 ) return false;
-    if ( event.numberOfTightLeptons() == 3 && event.numberOfFOLeptons() != 3 ) return false;
-    if ( event.numberOfTightLeptons() == 4 && event.numberOfLooseLeptons() != 4 ) return false;
-    return true;
+    if ( event.numberOfFOLeptons() == 3 || event.numberOfFOLeptons() == 4 ) return true;
+    return false;
 }
 
 
 bool ttZ::passSelectionTTZ( Event& event, const std::string& uncertainty ){
-    if ( numberOfVariedJets( event, uncertainty ) < 2 ) return false;
+    if ( numberOfVariedJets( event, uncertainty ) < 1 ) return false;
     if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
-    if ( event.numberOfFOLeptons() == 3 && ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) ) return false;
     if ( event.numberOfFOLeptons() < 3 ) return false;
+    if ( event.numberOfFOLeptons() == 3 && ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) ) return false;
     if ( event.numberOfFOLeptons() == 3 && numberOfVariedBJets( event, uncertainty ) > 0 && numberOfVariedJets( event, uncertainty ) < 2  ) return false;
     // 4L selection
     if ( event.numberOfTightLeptons() == 4 ){
@@ -190,6 +188,96 @@ bool ttZ::passSelectionTTZ( Event& event, const std::string& uncertainty ){
 }
 
 
+bool ttZ::passSelectionTTZclean( Event& event, const std::string& uncertainty ){
+
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+    if ( event.numberOfFOLeptons() == 3 ){
+        if ( numberOfVariedJets( event, uncertainty ) < 3 ) return false;
+        if ( numberOfVariedBJets( event, uncertainty ) < 1 ) return false;
+        if ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 10 ) return false;
+    }
+    else if ( event.numberOfFOLeptons() == 4 ){
+        if ( numberOfVariedJets( event, uncertainty ) < 2 ) return false;
+        if ( numberOfVariedBJets( event, uncertainty ) < 1 ) return false;
+        if ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 20 ) return false;
+    }
+    else return false; 
+    return true;
+}
+
+
+bool ttZ::passSelectionZZCR( Event& event ){
+
+    // 4 lepton only
+    if ( event.numberOfFOLeptons() != 4 ) return false;
+    // with Z candidate
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+    // and a second Z candidate
+    std::vector< LeptonCollection::size_type > ind2Zcand;
+    for( LeptonCollection::size_type l = 0; l < event.numberOfLeptons(); ++l ){
+        if( ( l == event.bestZBosonCandidateIndices().first ) || ( l == event.bestZBosonCandidateIndices().second ) ) continue;
+        ind2Zcand.push_back(l);
+    }
+    // on Z mass
+    if( oppositeSignSameFlavor( event.leptonCollection()[ind2Zcand.at(0)], event.leptonCollection()[ind2Zcand.at(1)] ) ){ 
+        double mass = ( event.leptonCollection()[ind2Zcand.at(0)] + event.leptonCollection()[ind2Zcand.at(1)] ).mass();
+        double massDifference = std::abs( mass - particle::mZ );
+        if( massDifference > 20 )  return false;
+        else return true;
+    }
+    return false;
+}
+
+
+bool ttZ::passSelectionDYCR( Event& event, const std::string& uncertainty ){
+
+    // exactly 3 leptons
+    if ( event.numberOfFOLeptons() != 3 ) return false;
+
+    // just 1 (non b) jet
+    if( numberOfVariedJets( event, uncertainty ) > 1 ) return false;
+    if( numberOfVariedBJets( event, uncertainty ) != 0 ) return false;
+
+    // with a Z boson
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+    if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) > 10 ) return false;
+
+    // and with trilepton mass close to Z pole
+    std::vector< LeptonCollection::size_type > ind2Zcand;
+    for( LeptonCollection::size_type l = 0; l < event.numberOfLeptons(); ++l ){
+        if( ( l == event.bestZBosonCandidateIndices().first ) || ( l == event.bestZBosonCandidateIndices().second ) ) continue;
+        ind2Zcand.push_back(l);
+    }
+    double mass = ( event.leptonCollection()[ind2Zcand.at(0)] + event.leptonCollection()[event.bestZBosonCandidateIndices().first] + event.leptonCollection()[event.bestZBosonCandidateIndices().second] ).mass();
+    double massDifference = std::abs( mass - particle::mZ );
+    if( massDifference > 20 )  return false;
+    return true;
+}
+
+
+bool ttZ::passSelectionttbarCR( Event& event, const std::string& uncertainty ){
+
+    // exactly 3 leptons
+    if ( event.numberOfFOLeptons() != 3 ) return false;
+
+    // no Z boson candidate
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+    if ( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) < 10 ) return false;
+
+    // and with trilepton mass close below 101 GeV
+    std::vector< LeptonCollection::size_type > ind2Zcand;
+    for( LeptonCollection::size_type l = 0; l < event.numberOfLeptons(); ++l ){
+        if( ( l == event.bestZBosonCandidateIndices().first ) || ( l == event.bestZBosonCandidateIndices().second ) ) continue;
+        ind2Zcand.push_back(l);
+    }
+    double mlll = ( event.leptonCollection()[ind2Zcand.at(0)] + event.leptonCollection()[event.bestZBosonCandidateIndices().first] + event.leptonCollection()[event.bestZBosonCandidateIndices().second] ).mass();
+     if (mlll < 101 ) return false;
+     else if ( (std::abs( event.bestZBosonCandidateMass() - particle::mZ ) > 10) &&
+               numberOfVariedBJets( event, uncertainty ) == 0  ) return false;
+
+    return true;
+}
+
 
 bool ttZ::passVariedSelectionNPCR( Event& event, const std::string& uncertainty ){
     static constexpr size_t numberOfBJets = 1;
@@ -208,43 +296,43 @@ bool ttZ::passVariedSelectionXGammaCR( Event& event, const std::string& uncertai
 
 
 bool ttZ::passTriggerSelection( const Event& event ){
-//    if( event.numberOfMuons() >= 1 ){
-//        if( event.passTriggers_m() ) return true;
-//    } 
-//    if( event.numberOfMuons() >= 2 ){
-//        if( event.passTriggers_mm() ) return true;
-//    }
-//    if( event.numberOfMuons() >= 3 ){
-//        if( event.passTriggers_mmm() ) return true;
-//    }
-//    if( event.numberOfElectrons() >= 1 ){
-//        if( event.passTriggers_e() ) return true;
-//    }
-//    if( event.numberOfElectrons() >= 2 ){
-//        if( event.passTriggers_ee() ) return true;
-//    }
-//    if( event.numberOfElectrons() >= 3 ){
-//        if( event.passTriggers_eee() ) return true;
-//    }
-//    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 1 ) ){
-//        if( event.passTriggers_em() ) return true;
-//    }
-//    if( ( event.numberOfMuons() >= 2 ) && ( event.numberOfElectrons() >= 1 ) ){
-//        if( event.passTriggers_emm() ) return true;
-//    }
-//    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 2 ) ){
-//        if( event.passTriggers_eem() ) return true;
-//    }
+    if( event.numberOfMuons() >= 1 ){
+        if( event.passTriggers_m() ) return true;
+    } 
+    if( event.numberOfMuons() >= 2 ){
+        if( event.passTriggers_mm() ) return true;
+    }
+    if( event.numberOfMuons() >= 3 ){
+        if( event.passTriggers_mmm() ) return true;
+    }
+    if( event.numberOfElectrons() >= 1 ){
+        if( event.passTriggers_e() ) return true;
+    }
+    if( event.numberOfElectrons() >= 2 ){
+        if( event.passTriggers_ee() ) return true;
+    }
+    if( event.numberOfElectrons() >= 3 ){
+        if( event.passTriggers_eee() ) return true;
+    }
+    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 1 ) ){
+        if( event.passTriggers_em() ) return true;
+    }
+    if( ( event.numberOfMuons() >= 2 ) && ( event.numberOfElectrons() >= 1 ) ){
+        if( event.passTriggers_emm() ) return true;
+    }
+    if( ( event.numberOfMuons() >= 1 ) && ( event.numberOfElectrons() >= 2 ) ){
+        if( event.passTriggers_eem() ) return true;
+    }
 
-        if( event.passTriggers_m() || 
-		    event.passTriggers_mm() ||
-            event.passTriggers_mmm() ||
-            event.passTriggers_e() ||
-            event.passTriggers_ee() ||
-            event.passTriggers_eee() ||
-            event.passTriggers_em() ||
-            event.passTriggers_emm() ||
-            event.passTriggers_eem() ) return true;
+//        if( event.passTriggers_m() || 
+//		    event.passTriggers_mm() ||
+//            event.passTriggers_mmm() ||
+//            event.passTriggers_e() ||
+//            event.passTriggers_ee() ||
+//            event.passTriggers_eee() ||
+//            event.passTriggers_em() ||
+//            event.passTriggers_emm() ||
+//            event.passTriggers_eem() ) return true;
 
     return false;
 }
@@ -254,21 +342,15 @@ bool ttZ::passPtCuts( const Event& event ){
     
     //assume leptons were ordered while applying baseline selection
     bool sel4L = false;
-    if( event.numberOfTightLeptons() == 4) sel4L = true;
+    if( event.numberOfFOLeptons() == 4) sel4L = true;
     //leading lepton
     if( event.lepton( 0 ).pt() <= 40 ) return false;
-    //if( event.lepton( 0 ).isMuon() && event.lepton( 0 ).pt() <= 40 ) return false;
-    //if( event.lepton( 0 ).isElectron() && event.lepton( 0 ).pt() <= 40 ) return false;
 
     //subleading lepton
     if( event.lepton( 1 ).pt() <= ( sel4L ? 10 : 20 ) ) return false;
-    //if( event.lepton( 1 ).isMuon() && event.lepton( 1 ).pt() <= 20 ) return false;
-    //if( event.lepton( 1 ).isElectron() && event.lepton( 1 ).pt() <= 20 ) return false;
 
     //trailing lepton
     if( event.lepton( 2 ).pt() <= 10 ) return false;
-    //if( event.lepton( 2 ).isMuon() && event.lepton( 2 ).pt() <= 10 ) return false;
-    //if( event.lepton( 2 ).isElectron() && event.lepton( 2 ).pt() <= 10 ) return false;
     
     // 4th lepton
     if( sel4L && event.lepton( 3 ).pt() <= 10 ) return false;
@@ -379,20 +461,19 @@ unsigned ttZ::SR_main(const int nL, const int nJ, const int nB){ //3 light lepto
         sr += 12;
         if ( nB > 0 ) sr += 1;
     }
-    else std::cout << "i should not get here" << std::endl;
     return sr;
 }
 
 
 
 unsigned ttZ::ttZFlavPlot( const Event& event ){
-    if( event.numberOfLightLeptons() == 3 ){
+    if( event.numberOfFOLeptons() == 3 ){
         if( event.numberOfMuons() == 3 ) return 0;
         if( event.numberOfMuons() == 2 ) return 1;
         if( event.numberOfMuons() == 1 ) return 2;
         if( event.numberOfElectrons() == 3 ) return 3;
     }
-    if( event.numberOfLightLeptons() == 4 ){
+    if( event.numberOfFOLeptons() == 4 ){
         if( event.numberOfMuons() == 4 ) return 0;
         if( event.numberOfMuons() == 3 ) return 1;
         if( event.numberOfElectrons() == 4 ) return 3;
@@ -400,3 +481,5 @@ unsigned ttZ::ttZFlavPlot( const Event& event ){
     }
     return 0;
 }
+
+

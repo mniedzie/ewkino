@@ -1,3 +1,5 @@
+//
+//
 //include c++ library classes
 
 //include ROOT classes 
@@ -19,6 +21,7 @@
 #include "interface/ttZVariables.h"
 //#include "interface/ttZSearchRegions.h"
 
+#include <functional> 
 
 //compare floating points
 bool floatEqual( const double lhs, const double rhs ){
@@ -47,11 +50,15 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "ht", "H_{T} (GeV)", 10, 0, 800 ),
 
         HistInfo( "nJets", "number of jets", 8, 0, 8 ),
-        HistInfo( "nBJets", "number of b-jets (medium deep CSV)", 5, 0, 5 ),
+        HistInfo( "nBJets", "number of b-jets (medium deep CSV)", 5, -0.5, 4.5 ),
         HistInfo( "nVertex", "number of vertices", 30, 0, 70 ),
 
         HistInfo( "ttZSR", "Signal Regions", 14, 0, 14 ),
-        HistInfo( "ttZFlav", "Lepton flavors", 4, 0, 4 )
+        HistInfo( "ttZFlav", "Lepton flavors", 4, 0, 4 ),
+
+        HistInfo( "ptZ", "p_{T}^{Z} [GeV]", 16, 0, 400 ),
+        HistInfo( "cosThetaStar", "cos(#theta^{*})", 5, -1, 1 ),
+
     };
     return histInfoVec;
 }
@@ -61,7 +68,7 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
     
     auto varMap = ttZ::computeVariables( event, uncertainty );
     std::vector< double > fillValues;
-    unsigned searchttZ = ttZ::SR_main( event.numberOfTightLeptons(), ttZ::numberOfVariedJets( event, uncertainty ), ttZ::numberOfVariedBJets( event, uncertainty ) );
+    unsigned searchttZ = ttZ::SR_main( event.numberOfFOLeptons(), ttZ::numberOfVariedJets( event, uncertainty ), ttZ::numberOfVariedBJets( event, uncertainty ) );
     unsigned ttZFlav = ttZ::ttZFlavPlot( event );
     fillValues = {
         event.lepton( 0 ).pt(),
@@ -83,6 +90,9 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
 
         static_cast< double >( searchttZ ),
         static_cast< double >( ttZFlav ),
+
+        varMap.at("ptZ"),
+        varMap.at("cosThetaStar"),
     };
     
     return fillValues;
@@ -101,12 +111,15 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
     analysisTools::checkYearString( year );
 
     //selection that defines the control region
-//    const std::map< std::string, std::function< bool (Event&, const std::string&) > > crSelectionFunctionMap{
-//        { "WZ", ttZ::passVariedSelectionWZCR },
-//        { "XGamma", ttZ::passVariedSelectionXGammaCR },
-//        { "TTZ", ttZ::passSelectionTTZ },
-//        { "NP", ttZ::passVariedSelectionNPCR }
-//    };
+    const std::map< std::string, std::function< bool (Event&, const std::string&) > > crSelectionFunctionMap{
+        { "ttZclean", ttZ::passSelectionTTZclean},
+        { "WZ", ttZ::passSelectionWZCR},
+        { "DY", ttZ::passSelectionDYCR},
+        { "ttbar", ttZ::passSelectionttbarCR},
+        { "ZZ", ttZ::passSelectionZZCR},
+        { "TTZ", ttZ::passSelectionTTZ }
+    };
+
     auto passSelection = ttZ::passSelectionTTZ;
 
 
@@ -177,7 +190,7 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
 
     std::cout << "event loop" << std::endl;
 
-    bool FRfromMC = true;
+    bool FRfromMC = false;
 
     std::cout << "Fake rate from data? " << (FRfromMC ? "no":"yes") << std::endl;
 
@@ -229,13 +242,13 @@ void analyze( const std::string& year, const std::string& sampleDirectoryPath ){
                 if( event.isMC() ) weight *= -1.;
             }
 
-            // in 4L nonptrompt is calcualted from MC, should add WZ to nonprompt too.
-            if( event.isMC() && event.numberOfTightLeptons() == 4 && !ttZ::leptonsArePrompt( event ) ){
-                fillIndex = treeReader.numberOfSamples();
-            }
+//            // in 4L nonptrompt is calcualted from MC, should add WZ to nonprompt too.
+//            if( event.isMC() && event.numberOfTightLeptons() == 4 && !ttZ::leptonsArePrompt( event ) ){
+//                fillIndex = treeReader.numberOfSamples();
+//            }
             
-            // for nonprompt from MC, reject events with 
-            if( event.numberOfTightLeptons() < 3 && FRfromMC ) continue;
+//            // for nonprompt from MC, reject events with 
+//            if( event.numberOfTightLeptons() < 3 && FRfromMC ) continue;
 
             //fill nominal histograms
 //            if( passSelection( event, "nominal" ) || ttZ::passSelectionWZCR( event, "nominal" ) ){

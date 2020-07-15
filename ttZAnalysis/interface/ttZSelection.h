@@ -21,7 +21,11 @@ namespace ttZ{
 
     bool passSelectionLNumber( Event& event );
     bool passSelectionTTZ( Event& event, const std::string& uncertainty );
+    bool passSelectionTTZclean( Event& event, const std::string& uncertainty );
     bool passSelectionWZCR( Event& event, const std::string& uncertainty );
+    bool passSelectionDYCR( Event& event, const std::string& uncertainty );
+    bool passSelectionttbarCR( Event& event, const std::string& uncertainty );
+    bool passSelectionZZCR( Event& event );
 
     bool passVariedSelectionNPCR( Event& event, const std::string& uncertainty );
     bool passVariedSelectionXGammaCR( Event& event, const std::string& uncertainty );
@@ -34,6 +38,8 @@ namespace ttZ{
 
     unsigned SR_main(const int nL, const int nJ, const int nB);
     unsigned ttZFlavPlot( const Event& event );
+    unsigned ttZFlavPlot3L( const Event& event );
+    unsigned ttZFlavPlot4L( const Event& event );
 }
 
 #endif

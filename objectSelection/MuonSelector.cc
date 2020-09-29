@@ -5,7 +5,7 @@
 
 
 double leptonMVACutMuon(){
-    return 0.4;
+    return 0.05;
 }
 
 
@@ -61,7 +61,8 @@ double slidingDeepFlavorThreshold( const double looseWP, const double mediumWP, 
 bool MuonSelector::isFOBase() const{
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
-    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ){
+//    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ){
+    if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
         if( muonPtr->ptRatio() <= 0.4 ) return false;
     }
 //    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
@@ -114,7 +115,8 @@ tight muon selection
 bool MuonSelector::isTightBase() const{
     if( !isFO() ) return false;
     if( !muonPtr->isMediumPOGMuon() ) return false;
-    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ) return false;
+//    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ) return false;
+    if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ) return false;
     return true;
 }
 

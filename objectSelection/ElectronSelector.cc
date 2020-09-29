@@ -13,7 +13,7 @@ loose electron selection
 
 
 double leptonMVACutElectron(){
-    return 0.4;
+    return 0.0;
 }
 
 
@@ -63,7 +63,8 @@ bool ElectronSelector::isFOBase() const{
 //    } else {
 //        if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
 //    }
-    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+//    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
         if( electronPtr->ptRatio() <= 0.4 ) return false;
     }
 //    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
@@ -82,7 +83,8 @@ bool ElectronSelector::isFO2016() const{
     double electronMVAvalue = electronPtr->electronMVASummer16GP();
     if( electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2016() ) return false;
 	if( electronMVAvalue < ( -0.1 + (electronPtr->absEta() >= 1.479)*0.8 ) ) return false;
-    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+//    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
         if( electronPtr->closestJetDeepCSV() > 0.4 ) return false;
     }
     return true;
@@ -94,7 +96,8 @@ bool ElectronSelector::isFO2017() const{
     double electronMVAvalue = electronPtr->electronMVAFall17NoIso();
     if( electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2017() ) return false;
 	if( electronMVAvalue < ( -0.3 + (electronPtr->absEta() >= 1.479)*0.6 ) ) return false;
-    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+//    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
         if( electronPtr->closestJetDeepCSV() > 0.4 ) return false;
     }
     return true;
@@ -106,7 +109,8 @@ bool ElectronSelector::isFO2018() const{
     double electronMVAvalue = electronPtr->electronMVAFall17NoIso();
     if( electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2018() ) return false;
 	if( electronMVAvalue < ( -0.3 + (electronPtr->absEta() >= 1.479)*0.6 ) ) return false;
-    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+//    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ){
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
         if( electronPtr->closestJetDeepCSV() > 0.4 ) return false;
     }
     return true;
@@ -119,7 +123,8 @@ tight electron selection
 
 bool ElectronSelector::isTightBase() const{
     if( !isFO() ) return false;
-    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ) return false;
+//    if( electronPtr->leptonMVAtZq() <= leptonMVACutElectron() ) return false;
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ) return false;
     return true;
 }
 

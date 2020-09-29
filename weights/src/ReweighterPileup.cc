@@ -7,6 +7,7 @@
 #include "TFile.h"
 
 //include other parts of framework
+#include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/systemTools.h"
 #include "../../Tools/interface/histogramTools.h"
@@ -48,6 +49,11 @@ void computeAndWritePileupWeights( const Sample& sample, const std::string& weig
             //divide data and MC histograms to get the weights
             pileupData->Divide( pileupMC.get() );
 
+            //check each bin of the histogram, and set its binContent to 0 if it is negative
+            for(int b = 1; b < pileupData->GetNbinsX() + 1; ++b){
+                if(pileupData->GetBinContent(b) < 0.) pileupData->SetBinContent(b, 0.);
+            }
+            //        analysisTools::setNegativeBinsToZero( pileupData );
             pileupWeights[ year ][ var ] = std::shared_ptr< TH1 >( dynamic_cast< TH1* >( pileupData->Clone() ) );
 
             //close the file and make sure the histogram persists

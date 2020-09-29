@@ -147,7 +147,7 @@ bool ttZ::passVariedSelectionTTZCR( Event& event, const std::string& uncertainty
 
 
 bool ttZ::passSelectionWZCR( Event& event, const std::string& uncertainty ){
-    if( numberOfVariedJets( event, uncertainty ) < 1 ) return false;
+//    if( numberOfVariedJets( event, uncertainty ) < 1 ) return false;
     if( numberOfVariedBJets( event, uncertainty ) != 0 ) return false;
     if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
     if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) > 10 ) return false;
@@ -206,7 +206,9 @@ bool ttZ::passSelectionTTZclean( Event& event, const std::string& uncertainty ){
 }
 
 
-bool ttZ::passSelectionZZCR( Event& event ){
+bool ttZ::passSelectionZZCR( Event& event, const std::string& uncertainty  ){
+
+    if (uncertainty=="donothing") std::cout << "dindonothin" << std::endl;
 
     // 4 lepton only
     if ( event.numberOfFOLeptons() != 4 ) return false;

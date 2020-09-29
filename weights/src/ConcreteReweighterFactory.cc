@@ -124,9 +124,11 @@ CombinedReweighter ttZReweighterFactory::buildReweighter( const std::string& wei
 
     //make muon ID Reweighter
 //    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_m_" + year + "_3lTight.root" ).c_str() );
-    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/scaleFactors_muons_" + year + "_upd.root" ).c_str() );
+//    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/scaleFactors_muons_" + year + "_upd.root" ).c_str() );
+    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/scaleFactors_muons_" + year + "_Loose.root" ).c_str() );
 //    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "SFglobal" ) ) );
-    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "MuonToTTVLoose" ) ) );
+//    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "MuonToTTVLoose" ) ) );
+    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "NUM_LeptonMvaLoose_DEN_genTracks_abseta_pt" ) ) );
     muonSFHist->SetDirectory( gROOT );
     muonSFFile->Close();
 
@@ -135,10 +137,13 @@ CombinedReweighter ttZReweighterFactory::buildReweighter( const std::string& wei
 
     //make electron ID Reweighter
 //    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_e_" + year + "_3lTight.root" ).c_str() );
-    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/scaleFactors_electrons_" + year + "_upd.root" ).c_str() );
+//    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/scaleFactors_electrons_" + year + "_upd.root" ).c_str() );
+    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egammaEffi_EGM2D_" + year + "_LeptonMVA_Loose.root" ).c_str() );
+
 //    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "SFglobal" ) ) );
 //    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "EleToTTVLoose" ) ) );
-    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "EleToTTVLeptonMvattZ3l" ) ) );
+//    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "EleToTTVLeptonMvattZ3l" ) ) );
+    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "EGamma_SF2D" ) ) );
     electronSFHist->SetDirectory( gROOT );
     eleSFFile->Close();
 
@@ -146,7 +151,8 @@ CombinedReweighter ttZReweighterFactory::buildReweighter( const std::string& wei
     combinedReweighter.addReweighter( "electronID", std::make_shared< ReweighterElectronsID >( electronIDReweighter ) );
 
     //make electron Reconstruction Reweighter
-    if( year == "2016" || year == "2017" ){
+    // Reco scale factors are provided by POG,           !!!!    2018 are NOT split by p_T    !!!!
+    if( year == "2016" || year == "2017" || year == "2018" ){
 
         //pT below 20 GeV
 //        TFile* eleRecoSFFile_pTBelow20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/EGM2D_low_RecoSF_" + year + ".root" ).c_str() );
@@ -168,18 +174,7 @@ CombinedReweighter ttZReweighterFactory::buildReweighter( const std::string& wei
         ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, new LooseMinPtSelector< 20 > );
         combinedReweighter.addReweighter( "electronReco_pTAbove20", std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTAbove20 ) );
 
-    } else if( year == "2018" ){
-
-        //inclusive pT 
-        TFile* eleRecoSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egamma_recoEff_" + year + ".root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist ( dynamic_cast< TH2* >( eleRecoSFFile->Get( "EGamma_SF2D" ) ) );
-        electronRecoSFHist->SetDirectory( gROOT );
-        eleRecoSFFile->Close();
-
-        ElectronIDReweighter electronRecoReweighter( electronRecoSFHist, new LooseSelector );
-        combinedReweighter.addReweighter( "electronReco", std::make_shared< ReweighterElectronsID >( electronRecoReweighter ) );
-//
-    }
+    } 
     
     //make pileup Reweighter
     combinedReweighter.addReweighter( "pileup", std::make_shared< ReweighterPileup >( samples, weightDirectory ) );
@@ -190,12 +185,13 @@ CombinedReweighter ttZReweighterFactory::buildReweighter( const std::string& wei
     //read MC b-tagging efficiency histograms
 //    const std::string& leptonCleaning = "looseLeptonCleaned";
 //    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_" + leptonCleaning + "_" + year + ".root" ).c_str() );
-    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_deepCSV_cleaned_ttZ3l_" + year + ".root" ).c_str() );
-    std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get(  "bTagEff_mediumudsg"  ) ) );
+    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_looseLeptonCleaned_" + year + ".root" ).c_str() );
+//    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_deepCSV_cleaned_ttZ3l_" + year + ".root" ).c_str() );
+    std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get(  "bTagEff_medium_udsg"  ) ) );
     bTagEffMCHist_udsg->SetDirectory( gROOT );
-    std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >( bTagEffMCFile->Get( "bTagEff_mediumcharm"  ) ) );
+    std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >( bTagEffMCFile->Get( "bTagEff_medium_charm"  ) ) );
     bTagEffMCHist_c->SetDirectory( gROOT );
-    std::shared_ptr< TH2 > bTagEffMCHist_b( dynamic_cast< TH2* >( bTagEffMCFile->Get( "bTagEff_mediumbeauty"  ) ) );
+    std::shared_ptr< TH2 > bTagEffMCHist_b( dynamic_cast< TH2* >( bTagEffMCFile->Get( "bTagEff_medium_beauty"  ) ) );
 //    std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
 //    bTagEffMCHist_udsg->SetDirectory( gROOT );
 //    std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_charm" ).c_str() ) ) );

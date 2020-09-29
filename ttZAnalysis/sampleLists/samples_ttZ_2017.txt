@@ -13,6 +13,7 @@ ttX        TTZZ_TuneCP5_13TeV-madgraph-pythia8_Fall17.root                      
 WZ         WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root                             5.063
 Xgamma     DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root                      6025.2
 Xgamma     TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_Fall17.root                      3.697
+Xgamma     TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_Fall17.root                        87.31483776
 ZZ         ZZTo4L_13TeV_powheg_pythia8_Fall17.root                                             1.3816
 ZZ         GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8_Fall17.root                         0.005423
 ZZ         GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8_Fall17.root                        0.005423

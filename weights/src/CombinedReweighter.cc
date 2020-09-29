@@ -48,10 +48,11 @@ const Reweighter* CombinedReweighter::operator[]( const std::string& name ) cons
 
 double CombinedReweighter::totalWeight( const Event& event ) const{
     double weight = 1.;
+//    std::cout << "printing weights: " << std::endl;
     for( const auto& r : reweighterVector ){
 //	    std::cout << "weight test " << weight << std::endl;
-        weight *= std::abs(r->weight( event ));
-//	    std::cout << "weight test " << weight << std::endl;
+        weight *= r->weight( event );
+//	    std::cout << "weight test " << std::abs(r->weight( event )) << std::endl;
     }
     return weight;
 }

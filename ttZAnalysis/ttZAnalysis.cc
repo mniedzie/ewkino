@@ -165,9 +165,9 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         }
     }
 
-    //const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     //const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
-    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+ //   const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
 	// for each uncertainty
@@ -207,7 +207,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
             
 //            if(entry > treeReader.numberOfEntries()/20) break;            
 //            if(entry > 10000) break;
-//            if(entry > 1000) break;
+            if(entry > 1000) break;
             //apply baseline selection
             if( !ttZ::passBaselineSelection( event, true, true ) ) continue;
 
@@ -219,7 +219,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
             if( !( event.passMetFilters() ) ) continue;
 
             //remove photon overlap
-            if( !ttZ::passPhotonOverlapRemoval( event ) ) continue;
+//            if( !ttZ::passPhotonOverlapRemoval( event ) ) continue;
 
             //require the right number of tight and FO(loose) leptons in 3(4) lepton events
             if( !ttZ::passSelectionLNumber( event ) ) continue;
@@ -276,37 +276,37 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
             //no uncertainties for data
             if( event.isData() ) continue;
             
-//            //fill JEC down histograms
-//            if( passSelection( event, "JECDown" ) ){
-//                auto fillValues = buildFillingVector( event, "JECDown" );
-//                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                    histogram::fillValue( histogramsUncDown[ "JEC_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
-//                }
-//            }
-//
-//            //fill JEC up histograms
-//            if( passSelection( event, "JECUp" ) ){
-//                auto fillValues = buildFillingVector( event, "JECUp" );
-//                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                    histogram::fillValue( histogramsUncUp[ "JEC_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
-//                }
-//            }
-//
-//            //fill JER down histograms
-//            if( passSelection( event, "JERDown" ) ){
-//                auto fillValues = buildFillingVector( event, "JERDown" );
-//                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                    histogram::fillValue( histogramsUncDown[ "JER_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
-//                }
-//            }
-//
-//            //fill JER up histograms
-//            if( passSelection( event, "JERUp" ) ){
-//                auto fillValues = buildFillingVector( event, "JERUp" );
-//                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//                    histogram::fillValue( histogramsUncUp[ "JER_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
-//                }
-//            }
+            //fill JEC down histograms
+            if( passSelection( event, "JECDown" ) ){
+                auto fillValues = buildFillingVector( event, "JECDown" );
+                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                    histogram::fillValue( histogramsUncDown[ "JEC_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
+                }
+            }
+
+            //fill JEC up histograms
+            if( passSelection( event, "JECUp" ) ){
+                auto fillValues = buildFillingVector( event, "JECUp" );
+                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                    histogram::fillValue( histogramsUncUp[ "JEC_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
+                }
+            }
+
+            //fill JER down histograms
+            if( passSelection( event, "JERDown" ) ){
+                auto fillValues = buildFillingVector( event, "JERDown" );
+                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                    histogram::fillValue( histogramsUncDown[ "JER_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
+                }
+            }
+
+            //fill JER up histograms
+            if( passSelection( event, "JERUp" ) ){
+                auto fillValues = buildFillingVector( event, "JERUp" );
+                for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                    histogram::fillValue( histogramsUncUp[ "JER_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight );
+                }
+            }
 
 //    //            //fill unclustered down histograms
 //    //            if( passSelection( event, "UnclDown" ) ){
@@ -328,42 +328,42 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
             if( !passSelection( event, "nominal" ) ) continue;
             auto fillValues = buildFillingVector( event, "nominal" );
 
-//          //fill scale down histograms
-//          double weightScaleDown;
-//          try{
-//              weightScaleDown =  event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5();
-//          } catch( std::out_of_range& ){
-//              weightScaleDown = 1.;
-//          }
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleDown );
-//          }
-//      
-//          //fill scale up histograms
-//          double weightScaleUp;
-//          try{
-//              weightScaleUp = event.generatorInfo().relativeWeight_MuR_2_MuF_2();
-//          } catch( std::out_of_range& ){
-//              weightScaleUp = 1.;
-//          }
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleUp );
-//          }
-//
-//          //fill pileup down histograms
-//          double weightPileupDown = reweighter[ "pileup" ]->weightDown( event ) / reweighter[ "pileup" ]->weight( event );
-//          if ( std::isnan(weightPileupDown) ) weightPileupDown = 0.;
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupDown );
-//          }
-//
-//          //fill pileup up histograms
-//          double weightPileupUp = reweighter[ "pileup" ]->weightUp( event ) / reweighter[ "pileup" ]->weight( event );
-//          if ( std::isnan(weightPileupUp) ) weightPileupUp = 0.;
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
-//          }
-//
+          //fill scale down histograms
+          double weightScaleDown;
+          try{
+              weightScaleDown =  event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5();
+          } catch( std::out_of_range& ){
+              weightScaleDown = 1.;
+          }
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleDown );
+          }
+      
+          //fill scale up histograms
+          double weightScaleUp;
+          try{
+              weightScaleUp = event.generatorInfo().relativeWeight_MuR_2_MuF_2();
+          } catch( std::out_of_range& ){
+              weightScaleUp = 1.;
+          }
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleUp );
+          }
+
+          //fill pileup down histograms
+          double weightPileupDown = reweighter[ "pileup" ]->weightDown( event ) / reweighter[ "pileup" ]->weight( event );
+          if ( std::isnan(weightPileupDown) ) weightPileupDown = 0.;
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupDown );
+          }
+
+          //fill pileup up histograms
+          double weightPileupUp = reweighter[ "pileup" ]->weightUp( event ) / reweighter[ "pileup" ]->weight( event );
+          if ( std::isnan(weightPileupUp) ) weightPileupUp = 0.;
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
+          }
+
 //          //fill b-tag down histograms
 //          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
 //          double weightBTagHeavyDown = reweighter[ "bTag_heavy" ]->weightDown( event ) / reweighter[ "bTag_heavy" ]->weight( event );
@@ -390,51 +390,51 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
 //          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
 //              histogram::fillValue( histogramsUncUp[ "bTag_light_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagLightUp );
 //          }
-//
-//        //fill prefiring down histograms
-//          double weightPrefireDown = reweighter[ "prefire" ]->weightDown( event ) / reweighter[ "prefire" ]->weight( event );
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireDown );
+
+        //fill prefiring down histograms
+          double weightPrefireDown = reweighter[ "prefire" ]->weightDown( event ) / reweighter[ "prefire" ]->weight( event );
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireDown );
+          }
+      
+          //fill prefiring up histograms
+          double weightPrefireUp = reweighter[ "prefire" ]->weightUp( event ) / reweighter[ "prefire" ]->weight( event );
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireUp );
+          }
+
+          double recoWeightDown;
+          double recoWeightUp;
+//          if( !event.is2018() ){
+              recoWeightDown = reweighter[ "electronReco_pTBelow20" ]->weightDown( event ) * reweighter[ "electronReco_pTAbove20" ]->weightDown( event ) / ( reweighter[ "electronReco_pTBelow20" ]->weight( event ) * reweighter[ "electronReco_pTAbove20" ]->weight( event ) );
+              recoWeightUp = reweighter[ "electronReco_pTBelow20" ]->weightUp( event ) * reweighter[ "electronReco_pTAbove20" ]->weightUp( event ) / ( reweighter[ "electronReco_pTBelow20" ]->weight( event ) * reweighter[ "electronReco_pTAbove20" ]->weight( event ) );
+//          } else {
+//              recoWeightDown = reweighter[ "electronReco" ]->weightDown( event ) / ( reweighter[ "electronReco" ]->weight( event ) );
+//              recoWeightUp = reweighter[ "electronReco" ]->weightUp( event ) / ( reweighter[ "electronReco" ]->weight( event ) );
 //          }
-//      
-//          //fill prefiring up histograms
-//          double weightPrefireUp = reweighter[ "prefire" ]->weightUp( event ) / reweighter[ "prefire" ]->weight( event );
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "prefire" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPrefireUp );
-//          }
-//
-//          double recoWeightDown;
-//          double recoWeightUp;
-////          if( !event.is2018() ){
-//              recoWeightDown = reweighter[ "electronReco_pTBelow20" ]->weightDown( event ) * reweighter[ "electronReco_pTAbove20" ]->weightDown( event ) / ( reweighter[ "electronReco_pTBelow20" ]->weight( event ) * reweighter[ "electronReco_pTAbove20" ]->weight( event ) );
-//              recoWeightUp = reweighter[ "electronReco_pTBelow20" ]->weightUp( event ) * reweighter[ "electronReco_pTAbove20" ]->weightUp( event ) / ( reweighter[ "electronReco_pTBelow20" ]->weight( event ) * reweighter[ "electronReco_pTAbove20" ]->weight( event ) );
-////          } else {
-////              recoWeightDown = reweighter[ "electronReco" ]->weightDown( event ) / ( reweighter[ "electronReco" ]->weight( event ) );
-////              recoWeightUp = reweighter[ "electronReco" ]->weightUp( event ) / ( reweighter[ "electronReco" ]->weight( event ) );
-////          }
-//
-//          //fill lepton reco down histograms 
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "lepton_reco" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * recoWeightDown );
-//          }
-//
-//          //fill lepton reco up histograms 
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "lepton_reco" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * recoWeightUp );
-//          }
-//
-//          double leptonIDWeightDown = reweighter[ "muonID" ]->weightDown( event ) * reweighter[ "electronID" ]->weightDown( event ) / ( reweighter[ "muonID" ]->weight( event ) * reweighter[ "electronID" ]->weight( event ) );
-//          double leptonIDWeightUp = reweighter[ "muonID" ]->weightUp( event ) * reweighter[ "electronID" ]->weightUp( event ) / ( reweighter[ "muonID" ]->weight( event ) * reweighter[ "electronID" ]->weight( event ) );
-//
-//          //fill lepton id down histograms
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "lepton_id" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * leptonIDWeightDown );
-//          }
-//
-//          //fill lepton id up histograms
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "lepton_id" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * leptonIDWeightUp );
-//          }
+
+          //fill lepton reco down histograms 
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "lepton_reco" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * recoWeightDown );
+          }
+
+          //fill lepton reco up histograms 
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "lepton_reco" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * recoWeightUp );
+          }
+
+          double leptonIDWeightDown = reweighter[ "muonID" ]->weightDown( event ) * reweighter[ "electronID" ]->weightDown( event ) / ( reweighter[ "muonID" ]->weight( event ) * reweighter[ "electronID" ]->weight( event ) );
+          double leptonIDWeightUp = reweighter[ "muonID" ]->weightUp( event ) * reweighter[ "electronID" ]->weightUp( event ) / ( reweighter[ "muonID" ]->weight( event ) * reweighter[ "electronID" ]->weight( event ) );
+
+          //fill lepton id down histograms
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "lepton_id" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * leptonIDWeightDown );
+          }
+
+          //fill lepton id up histograms
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "lepton_id" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * leptonIDWeightUp );
+          }
         }
     }
 
@@ -621,7 +621,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         std::string directoryName;
         std::string plotNameAddition;
 
-            directoryName = stringTools::formatDirectoryName( "plots/" + year + "/" + procName + "/" + controlRegion );
+            directoryName = stringTools::formatDirectoryName( "plots/test" + year + "/" + procName + "/" + controlRegion );
             plotNameAddition = "_" + procName + "_" + controlRegion + "_" + year;
 //            directoryName = stringTools::formatDirectoryName( "plots/ttZ/" + year + "/" );
 //            plotNameAddition = "_" + year;

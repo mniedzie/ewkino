@@ -73,37 +73,16 @@ bool MuonSelector::isFOBase() const{
 
 
 bool MuonSelector::isFO2016() const{
-    if( muonPtr->closestJetDeepCSV()    >= bTagWP::tightDeepCSV2016() ) return false;
-//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-//        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2016(), bTagWP::mediumDeepFlavor2016(), muonPtr->uncorrectedPt() );
-//        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-//    } else {
-//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2016() ) return false;
-//    }
     return true;
 }
 
 
 bool MuonSelector::isFO2017() const{
-    if( muonPtr->closestJetDeepCSV()    >= bTagWP::tightDeepCSV2017() ) return false;
-//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-//        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2017(), bTagWP::mediumDeepFlavor2017(), muonPtr->uncorrectedPt() );
-//        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-//    } else {
-//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2017() ) return false;
-//    }
     return true;
 }
 
 
 bool MuonSelector::isFO2018() const{
-    if( muonPtr->closestJetDeepCSV()    >= bTagWP::tightDeepCSV2018() ) return false;
-//    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
-//        double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2018(), bTagWP::mediumDeepFlavor2018(), muonPtr->uncorrectedPt() );
-//        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-//    } else {
-//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2018() ) return false;
-//    }
     return true;
 }
 

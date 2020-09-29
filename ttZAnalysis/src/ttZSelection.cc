@@ -89,7 +89,7 @@ JetCollection::size_type ttZ::numberOfVariedBJets( const Event& event, const std
 }
 
 JetCollection::size_type ttZ::numberOfVariedJets( const Event& event, const std::string& uncertainty ){
-    return ttZ::variedJetCollection( event, uncertainty ).numberOfGoodAnyVariationJets();
+    return ttZ::variedJetCollection( event, uncertainty ).numberOfGoodJets();
 }
 
 

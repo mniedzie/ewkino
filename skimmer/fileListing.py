@@ -4,7 +4,7 @@ import os
 import sys
 
 
-#name_bits =['SingleMuion',
+#name_bits =['SingleMuon',
 #'SingleElectron',
 #'MuonEG',
 #'MET',
@@ -43,11 +43,10 @@ import sys
 #'ZH_HToZZ',
 #'ZZTo4L',
 #'ZZZ',
-#'tZq_ll_4f',
+#'tZq_ll',
+#'ZGTo2LG_TuneC',
 #'ttHToNonbb']
-#name_bits =['TTZToLLNuNu_M-10_TuneC',
-#'WZTo3LNu',
-#'ZZTo4L']
+name_bits =['TTTo2L2Nu']
 
 #perform os.walk up to a specified depth
 def walkLimitedDepth( input_directory, max_depth ):

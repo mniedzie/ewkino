@@ -348,7 +348,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     
     //order background histograms by yield
 //    yieldOrder(bkgClones, nBkg, isSMSignal);
-
+    if( isSMSignal ) std::cout << " " << std::endl;
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
     for(unsigned h = 0; h < nBkg; ++h){

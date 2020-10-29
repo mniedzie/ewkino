@@ -35,6 +35,7 @@ import sys
 #'WWZJetsTo4L2Nu',
 #'WWZ_',
 #'WZG_TuneC',
+#'WZTo2L'
 #'WZTo3LNu',
 #'WZZ_TuneC',
 #'WminusH_HToZZTo4L',
@@ -46,7 +47,30 @@ import sys
 #'tZq_ll',
 #'ZGTo2LG_TuneC',
 #'ttHToNonbb']
-name_bits =['TTTo2L2Nu']
+# for Fake Rate studies and measurement
+#name_bits =['DYJetsToLL_',
+#'TTJets_',
+#'TTTo2L2Nu',
+#'TTToSemiLeptonic',
+#'WJetsToLNu',
+#'TTToSemilepton',
+#'VVTo2L2Nu',
+#'WWTo1L1Nu2Q',
+#'WZTo1L1Nu2Q',
+#'WZTo1L3Nu',
+#'WZTo1L2Q',
+#'QCD_Pt']
+
+# for Fake Rate closure tests 
+name_bits =['TTToSemiLeptonic_TuneCP5_13TeV',
+'TTTo2L2Nu_TuneCP5_13TeV',
+'TTJets_SingleLept',
+'DYJetsToLL_M-10to50_T',
+'TTJets_DiLept']
+
+
+
+
 
 #perform os.walk up to a specified depth
 def walkLimitedDepth( input_directory, max_depth ):

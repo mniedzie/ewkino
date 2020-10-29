@@ -23,11 +23,11 @@ double extractPtCut( const std::string& triggerPath, const std::string& objectId
 
     //check that the requested object identifier is present
     if( !stringTools::stringContains( triggerPath, objectIdentifier ) ){
-		throw std::invalid_argument( "object identifier " + objectIdentifier + " not found in trigger path " + triggerPath );
-	}
+        throw std::invalid_argument( "object identifier " + objectIdentifier + " not found in trigger path " + triggerPath );
+    }
 
     std::string cutString = stringTools::split( stringTools::split( triggerPath, objectIdentifier ).back(), "_" ).front();
-	return std::stod( cutString );
+    return std::stod( cutString );
 }
 
 
@@ -48,12 +48,12 @@ double extractLeptonPtCut( const std::string& triggerPath ){
     }
 
     //extract pt threshold string 
-	return extractPtCut( triggerPath, flavorIdentifier );
+    return extractPtCut( triggerPath, flavorIdentifier );
 }
 
 
 double extractJetPtCut( const std::string& triggerPath ){
-	return extractPtCut( triggerPath, "PFJet" );
+    return extractPtCut( triggerPath, "PFJet" );
 }
 
 
@@ -135,6 +135,7 @@ bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool on
     if( onlyMuons && !lepton.isMuon() ) return false;
     else if( onlyElectrons && !lepton.isElectron() ) return false;
 
+    if( !( event.passMetFilters() ) ) return false;
     //optionally require the presence of at least one good jet
     if( requireJet ){
         event.selectGoodJets();
@@ -195,17 +196,17 @@ bool fakeRate::passTriggerJetSelection( Event& event, const std::string& trigger
     if( !stringTools::stringContains( trigger, "PFJet" ) ){
         return true;
     } else{
-		event.selectGoodJets();
-		event.cleanJetsFromLooseLeptons();
-		if( event.numberOfJets() < 1 ) return false; 
-       	event.sortJetsByPt();
+        event.selectGoodJets();
+        event.cleanJetsFromLooseLeptons();
+        if( event.numberOfJets() < 1 ) return false; 
+        event.sortJetsByPt();
 
-		//require central jet 
-		if( event.jet(0).absEta() >= 2.4 ) return false;
+        //require central jet 
+        if( event.jet(0).absEta() >= 2.4 ) return false;
 
-		//apply offline pT threshold to be on the trigger plateau
+        //apply offline pT threshold to be on the trigger plateau
         if( event.jet(0).pt() <= triggerToJetPtMap[ trigger ] ) return false;
-		
-		return true;
-	}
+        
+        return true;
+    }
 }

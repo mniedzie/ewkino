@@ -31,21 +31,22 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
     std::shared_ptr< TH1D > LeptonMVAHistogram = std::make_shared< TH1D >( "leptonMVA", "leptonMVA;lepton MVA;Events", numberOfBins, -1, 1 );
     LeptonMVAHistogram->Sumw2();
 
-	TreeReader treeReader( "sampleLists/samples_magicFactor.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate/");
+    TreeReader treeReader( "sampleLists/samples_magicFactor.txt", "/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/");
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
         treeReader.initSample();
+        std::cout << treeReader.currentSample().fileName() << std::endl;
 
         //loop over events in sample
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
             Event event = treeReader.buildEvent( entry );
-        
+
             //preselect loose leptons
             //magic factor tuning will happen before FO definition is final
             event.selectLooseLeptons();
             event.cleanElectronsFromLooseMuons();
-        
+
             for( const auto& leptonPtr : event.lightLeptonCollection() ){
 
                 //select correct lepton flavor
@@ -57,14 +58,14 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
 
                 //apply cone-correction to leptons failing the MVA cut 
                 double ptVal = leptonPtr->pt();
-                if( leptonPtr->leptonMVAttH() <= mvaThreshold ){
+                if( leptonPtr->leptonMVATOP() <= mvaThreshold ){
                     ptVal /= leptonPtr->ptRatio();
                 }
 
-                pTWeightedLeptonMVAHistogram->Fill( leptonPtr->leptonMVAttH(), event.weight()*ptVal );
-                LeptonMVAHistogram->Fill( leptonPtr->leptonMVAttH(), event.weight() );
+                pTWeightedLeptonMVAHistogram->Fill( leptonPtr->leptonMVATOP(), event.weight()*ptVal );
+                LeptonMVAHistogram->Fill( leptonPtr->leptonMVATOP(), event.weight() );
             }
-		}
+        }
     }
 
     //make average pT histogram as a function of lepton MVA by dividing the pT-weighted histogram by the normal one
@@ -102,7 +103,7 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
         std::cout << "magic factor from fit = " << (  f_aboveThreshold->GetParameter(0)*mvaThreshold + f_aboveThreshold->GetParameter(1) )/( f_belowThreshold->GetParameter(0)*mvaThreshold + f_belowThreshold->GetParameter(1) ) << std::endl;
         std::cout << "##################################" << std::endl;
     }
-    
+
 
     //plot average pT histogram after application of magic factor
     for( int bin = 1; bin < binIndexAboveThreshold; ++bin ){
@@ -123,6 +124,6 @@ int main( int argc, char* argv[] ){
         std::cerr << argc - 1 << " command line arguments given, while 2 are expected." << std::endl;
         std::cerr << "Usage : ./determineMagicFactor < lepton flavor > < mva threshold >" << std::endl;
     }
-    
+
     return 0;
 }

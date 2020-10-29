@@ -16,6 +16,8 @@
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
+#include "../Tools/interface/SampleCrossSections.h"
+
 //include ewkino specific code
 #include "interface/ttZSelection.h"
 #include "interface/ttZVariables.h"
@@ -49,7 +51,7 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "mll", "M_{ll} (GeV)", 10, 75, 105 ),
         HistInfo( "ht", "H_{T} (GeV)", 10, 0, 800 ),
 
-        HistInfo( "nJets", "number of jets", 8, 0, 8 ),
+        HistInfo( "nJets", "number of jets", 7, 1, 8 ),
         HistInfo( "nBJets", "number of b-jets (medium deep flavor)", 5, -0.5, 4.5 ),
         HistInfo( "nVertex", "number of vertices", 30, 0, 70 ),
 
@@ -165,8 +167,8 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         }
     }
 
-    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
-    //const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    //const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
  //   const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
@@ -207,7 +209,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
             
 //            if(entry > treeReader.numberOfEntries()/20) break;            
 //            if(entry > 10000) break;
-            if(entry > 1000) break;
+//            if(entry > 1000) break;
             //apply baseline selection
             if( !ttZ::passBaselineSelection( event, true, true ) ) continue;
 
@@ -364,32 +366,32 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
               histogram::fillValue( histogramsUncUp[ "pileup" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPileupUp );
           }
 
-//          //fill b-tag down histograms
-//          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
-//          double weightBTagHeavyDown = reweighter[ "bTag_heavy" ]->weightDown( event ) / reweighter[ "bTag_heavy" ]->weight( event );
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "bTag_heavy_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagHeavyDown );
-//          }
-//
-//          //fill b-tag up histograms
-//          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
-//          double weightBTagHeavyUp = reweighter[ "bTag_heavy" ]->weightUp( event ) / reweighter[ "bTag_heavy" ]->weight( event );
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "bTag_heavy_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagHeavyUp );
-//          }
-//
-//          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
-//          double weightBTagLightDown = reweighter[ "bTag_light" ]->weightDown( event ) / reweighter[ "bTag_light" ]->weight( event );
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncDown[ "bTag_light_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagLightDown );
-//          }
-//
-//          //fill b-tag up histograms
-//          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
-//          double weightBTagLightUp = reweighter[ "bTag_light" ]->weightUp( event ) / reweighter[ "bTag_light" ]->weight( event );
-//          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-//              histogram::fillValue( histogramsUncUp[ "bTag_light_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagLightUp );
-//          }
+          //fill b-tag down histograms
+          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
+          double weightBTagHeavyDown = reweighter[ "bTag_heavy" ]->weightDown( event ) / reweighter[ "bTag_heavy" ]->weight( event );
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "bTag_heavy_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagHeavyDown );
+          }
+
+          //fill b-tag up histograms
+          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
+          double weightBTagHeavyUp = reweighter[ "bTag_heavy" ]->weightUp( event ) / reweighter[ "bTag_heavy" ]->weight( event );
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "bTag_heavy_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagHeavyUp );
+          }
+
+          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
+          double weightBTagLightDown = reweighter[ "bTag_light" ]->weightDown( event ) / reweighter[ "bTag_light" ]->weight( event );
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncDown[ "bTag_light_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagLightDown );
+          }
+
+          //fill b-tag up histograms
+          //WARNING : THESE SHOULD ACTUALLY BE SPLIT BETWEEN HEAVY AND LIGHT FLAVORS
+          double weightBTagLightUp = reweighter[ "bTag_light" ]->weightUp( event ) / reweighter[ "bTag_light" ]->weight( event );
+          for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+              histogram::fillValue( histogramsUncUp[ "bTag_light_" + year ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightBTagLightUp );
+          }
 
         //fill prefiring down histograms
           double weightPrefireDown = reweighter[ "prefire" ]->weightDown( event ) / reweighter[ "prefire" ]->weight( event );
@@ -452,6 +454,30 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         }
     }
       
+    //make SampleCrossSectionRatio objects to remove cross section effects from theory uncertainties
+    std::map< std::string, SampleCrossSections > sampleCrossSectionsMap;
+    for( size_t p = 1; p < sampleVec.size(); ++p ){
+        sampleCrossSectionsMap[ sampleVec[ p ].uniqueName() ] = SampleCrossSections( sampleVec[p] );
+    }
+    
+    //divide out cross section ratios from scale uncertainty ( can not be done for nonprompt )
+    for( size_t p = 1; p < sampleVec.size(); ++p ){
+        for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+            double xSecRatioScaleDown;
+            double xSecRatioScaleUp;
+            try {
+                xSecRatioScaleDown = sampleCrossSectionsMap[ sampleVec[p].uniqueName() ].crossSectionRatio_MuR_0p5_MuF_0p5();
+                xSecRatioScaleUp = sampleCrossSectionsMap[ sampleVec[p].uniqueName() ].crossSectionRatio_MuR_2_MuF_2();
+            } catch( std::out_of_range& ){
+                xSecRatioScaleDown = 1.;
+                xSecRatioScaleUp = 1.;
+            }
+            histogramsUncDown[ "scale" ][ dist ][ p ]->Scale( 1./xSecRatioScaleDown );
+            histogramsUncUp[ "scale" ][ dist ][ p ]->Scale( 1./xSecRatioScaleUp );
+        }
+      }
+
+
 
     //merge process histograms
 //    std::vector< std::string > proc = {"Data", "ttZ", "WZ", "Xgamma", "ZZ", "Nonprompt",  };
@@ -621,7 +647,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         std::string directoryName;
         std::string plotNameAddition;
 
-            directoryName = stringTools::formatDirectoryName( "plots/test" + year + "/" + procName + "/" + controlRegion );
+            directoryName = stringTools::formatDirectoryName( "plots/" + year + "/" + procName + "/" + controlRegion );
             plotNameAddition = "_" + procName + "_" + controlRegion + "_" + year;
 //            directoryName = stringTools::formatDirectoryName( "plots/ttZ/" + year + "/" );
 //            plotNameAddition = "_" + year;

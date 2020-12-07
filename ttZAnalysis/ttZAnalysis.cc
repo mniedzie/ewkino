@@ -137,13 +137,17 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
 
     //read FR maps
     std::cout << "building FR maps" << std::endl;
-    TFile* frFileMuons = TFile::Open( ( "frMaps/muFR_QCD_MC_Marek_" + year + ".root" ).c_str() );
-    std::shared_ptr< TH2 > frMapMuons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileMuons->Get( "passed" ) ) );
+//    TFile* frFileMuons = TFile::Open( ( "frMaps/muFR_QCD_MC_Marek_" + year + ".root" ).c_str() );
+//    std::shared_ptr< TH2 > frMapMuons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileMuons->Get( "passed" ) ) );
+    TFile* frFileMuons = TFile::Open( ( "frMaps/fakeRateMap_data_muon_" + year + "_mT.root" ).c_str() );
+    std::shared_ptr< TH2 > frMapMuons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileMuons->Get( ("fakeRate_muon_" + year ).c_str() ) ) );
     frMapMuons->SetDirectory( gROOT );
     frFileMuons->Close();
 
-    TFile* frFileElectrons = TFile::Open( ( "frMaps/elFR_QCD_MC_Marek_" + year + ".root" ).c_str() );
-    std::shared_ptr< TH2 > frMapElectrons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileElectrons->Get( "passed" ) ) );
+//    TFile* frFileElectrons = TFile::Open( ( "frMaps/elFR_QCD_MC_Marek_" + year + ".root" ).c_str() );
+//    std::shared_ptr< TH2 > frMapElectrons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileElectrons->Get( "passed" ) ) );
+    TFile* frFileElectrons = TFile::Open( ( "frMaps/fakeRateMap_data_electron_" + year + "_mT.root" ).c_str() );
+    std::shared_ptr< TH2 > frMapElectrons = std::shared_ptr< TH2 >( dynamic_cast< TH2* >( frFileElectrons->Get( ( "fakeRate_electron_" + year ).c_str() ) ) );
     frMapElectrons->SetDirectory( gROOT );
     frFileElectrons->Close();
 
@@ -168,7 +172,8 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
     }
 
     //const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
-    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id", "pdf" }; //, "scaleXsec", "pdfXsec" }
+    unsigned numberOfPdfVariations = 100;
  //   const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
@@ -192,9 +197,27 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         }
     }
 
+    // create histograms for each pdf variation
+    std::map< unsigned, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsPDFVars;
+    // hard coded number of pdf variations!!
+    for( unsigned pdf_i = 0; pdf_i < numberOfPdfVariations; ++pdf_i){
+        histogramsPDFVars[ pdf_i ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 ) );
+		//create a set of all histograms
+        for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+		    // for each pdf variation
+            for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
+                if( p < sampleVec.size() ){
+                    histogramsPDFVars[ pdf_i ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + "_pdf_" + std::to_string( pdf_i ) );
+                } else {
+                    histogramsPDFVars[ pdf_i ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt_pdf_" + std::to_string( pdf_i ) );
+                }
+            }
+        }
+    }
+
     std::cout << "event loop" << std::endl;
 
-    bool FRfromMC = true;
+    bool FRfromMC = false;
 
     std::cout << "Fake rate from data? " << (FRfromMC ? "no":"yes") << std::endl;
 
@@ -203,14 +226,26 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
 
         std::cout << treeReader.currentSample().fileName() << std::endl;
 
+        bool sampleHasPdfAndScale = true;
+
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
             if ( sampleVec[ sampleIndex ].processName() != procName && procName != "all" ) break;
             Event event = treeReader.buildEvent( entry );
             
+            //check if sample has pdf and scale information stored, try-catch blocks for every event are too slow
+            if( entry == 0 && treeReader.isMC() ){
+                try{
+                    event.generatorInfo().relativeWeightPdfVar( 99 );
+                }catch( std::out_of_range& ){
+                    sampleHasPdfAndScale = false;
+                }
+            }
+
 //            if(entry > treeReader.numberOfEntries()/20) break;            
-//            if(entry > 10000) break;
+            if(entry > 10000) break;
 //            if(entry > 1000) break;
             //apply baseline selection
+
             if( !ttZ::passBaselineSelection( event, true, true ) ) continue;
 
             //apply lepton pT cuts
@@ -332,9 +367,11 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
 
           //fill scale down histograms
           double weightScaleDown;
-          try{
+          if( sampleHasPdfAndScale ){
+            std::cout << "bool is true" << std::endl;
               weightScaleDown =  event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5();
-          } catch( std::out_of_range& ){
+            std::cout << "does it pass to scale extraction?" << std::endl;
+          } else {
               weightScaleDown = 1.;
           }
           for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
@@ -343,13 +380,22 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
       
           //fill scale up histograms
           double weightScaleUp;
-          try{
+          if( sampleHasPdfAndScale ){
               weightScaleUp = event.generatorInfo().relativeWeight_MuR_2_MuF_2();
-          } catch( std::out_of_range& ){
+          } else {
               weightScaleUp = 1.;
           }
           for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
               histogram::fillValue( histogramsUncUp[ "scale" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightScaleUp );
+          }
+
+          //fill pdf histograms
+          for( unsigned pdf_i = 0; pdf_i < numberOfPdfVariations; ++pdf_i){
+              double weightPdf = sampleHasPdfAndScale ? event.generatorInfo().relativeWeightPdfVar(pdf_i) : 1.;
+              for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+                  //std::cout << " pdf_i, dist, fillIndex " << pdf_i << ", " << dist << ", " << fillIndex << std::endl;
+                  histogram::fillValue( histogramsPDFVars[ pdf_i ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * weightPdf );
+              }
           }
 
           //fill pileup down histograms
@@ -437,6 +483,43 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
           for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
               histogram::fillValue( histogramsUncUp[ "lepton_id" ][ dist ][ fillIndex ].get(), fillValues[ dist ], weight * leptonIDWeightUp );
           }
+
+        }
+    }
+      
+    //make SampleCrossSectionRatio objects to remove cross section effects from theory uncertainties
+    std::map< std::string, SampleCrossSections > sampleCrossSectionsMap;
+    for( size_t p = 1; p < sampleVec.size(); ++p ){
+        sampleCrossSectionsMap[ sampleVec[ p ].uniqueName() ] = SampleCrossSections( sampleVec[p] );
+    }
+
+    //compute pdf uncertainty histograms as RMS of all pdf variations
+    for( size_t p = 1; p < sampleVec.size(); ++p ){
+        //track pdf cross section variations to divide them out of the shape uncertainty
+        SampleCrossSections* crossSectionPtr = nullptr;
+        if( p < sampleVec.size() ){
+            crossSectionPtr = &sampleCrossSectionsMap[ sampleVec[ p ].uniqueName() ];
+        }
+        for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+            for( int bin = 1; bin < histogramsUncDown[ "pdf" ][ dist ][ p ]->GetNbinsX() + 1; ++bin ){
+                double varRMS = 0.;
+                double originalBin = histograms[ dist ][ p ]->GetBinContent( bin );
+                for( size_t pdf = 0; pdf < numberOfPdfVariations; ++pdf ){
+                    double variedBin = histogramsPDFVars[ pdf ][ dist ][ p ]->GetBinContent( bin );
+                    
+                    //divide out cross section effects
+                    if( p < sampleVec.size() ){
+                        if( crossSectionPtr->numberOfLheVariations() >= 110 ){
+                            variedBin /= crossSectionPtr->crossSectionRatio_pdfVar( p );
+                        }
+                    }
+                    double diff = ( variedBin - originalBin );
+                    varRMS += ( diff * diff );
+                }
+                varRMS = std::sqrt( ( 1./static_cast< double >( numberOfPdfVariations ) ) * varRMS );
+                histogramsUncDown[ "pdf" ][ dist ][ p ]->SetBinContent( bin, std::max( originalBin - varRMS, 0. ) );
+                histogramsUncUp[ "pdf" ][ dist ][ p ]->SetBinContent( bin, std::max( originalBin + varRMS, 0. ) );
+            }
         }
     }
 
@@ -452,12 +535,6 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
                 analysisTools::setNegativeBinsToZero( histogramsUncUp[ unc ][ dist ][ p ] );
             }
         }
-    }
-      
-    //make SampleCrossSectionRatio objects to remove cross section effects from theory uncertainties
-    std::map< std::string, SampleCrossSections > sampleCrossSectionsMap;
-    for( size_t p = 1; p < sampleVec.size(); ++p ){
-        sampleCrossSectionsMap[ sampleVec[ p ].uniqueName() ] = SampleCrossSections( sampleVec[p] );
     }
     
     //divide out cross section ratios from scale uncertainty ( can not be done for nonprompt )

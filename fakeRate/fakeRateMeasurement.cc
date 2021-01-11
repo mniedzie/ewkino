@@ -79,7 +79,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
    	TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
 
     //build a reweighter for scaling MC events
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new ttZReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
     
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
@@ -193,17 +193,23 @@ void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > 
 
 std::shared_ptr< Reweighter > makeLeptonReweighter( const std::string& year, const bool isMuon, const bool isFO){
 
-    std::string flavorString = ( isMuon ? "m" : "e" );
-    std::string wpString = ( isFO ? "FO" : "3lTight" );
+//    std::string flavorString = ( isMuon ? "muon" : "electron" );
+    std::string flavorString = ( isMuon ? "scaleFactors_muons" : "egammaEffi_EGM2D" );
+//    std::string wpString = ( isFO ? "FO" : "3lTight" );
+    std::string wpString = ( isMuon ? "Loose" : "LeptonMVA_Loose" );
     const std::string weightDirectory = "../weights/";
-    TFile* leptonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_" + flavorString + "_" + year + "_" + wpString + ".root" ).c_str() );
-    std::shared_ptr< TH2 > leptonSFHist( dynamic_cast< TH2* >( leptonSFFile->Get( "EGamma_SF2D" ) ) );
+//    TFile* leptonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_" + flavorString + "_" + year + "_" + wpString + ".root" ).c_str() );
+    TFile* leptonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/" + flavorString + "_" + year + "_" + wpString + ".root" ).c_str() );
+    std::shared_ptr< TH2 > leptonSFHist( dynamic_cast< TH2* >( leptonSFFile->Get( isMuon ? "NUM_LeptonMvaLoose_DEN_genTracks_abseta_pt" : "EGamma_SF2D" ) ) );
+
+
     leptonSFHist->SetDirectory( gROOT );
     leptonSFFile->Close();
 
     if( isMuon ){
         if( isFO ){
-            MuonReweighter muonReweighter( leptonSFHist, new FOSelector );
+//            MuonReweighter muonReweighter( leptonSFHist, new FOSelector );
+            MuonReweighter muonReweighter( leptonSFHist, new TightSelector );
             return std::make_shared< ReweighterMuons >( muonReweighter );
         } else {
             MuonReweighter muonReweighter( leptonSFHist, new TightSelector );
@@ -211,7 +217,8 @@ std::shared_ptr< Reweighter > makeLeptonReweighter( const std::string& year, con
         }
     } else {
         if( isFO ){
-            ElectronIDReweighter electronIDReweighter( leptonSFHist, new FOSelector );
+//            ElectronIDReweighter electronIDReweighter( leptonSFHist, new FOSelector );
+            ElectronIDReweighter electronIDReweighter( leptonSFHist, new TightSelector );
             return std::make_shared< ReweighterElectronsID >( electronIDReweighter );
         } else {
             ElectronIDReweighter electronIDReweighter( leptonSFHist, new TightSelector );
@@ -294,7 +301,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt" , sampleDirectory );
 
     //build a reweighter for scaling MC events
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new ttZReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
 
     //remove lepton weights from reweighter so a separate FO and tight reweighter can be made
@@ -418,7 +425,7 @@ int main( int argc, char* argv[] ){
     const double mTUpperCut_fakeRateMeasurement = 160;
     const double maxFitValue = 40;
     const bool use_mT = true;
-    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";
+    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate";
 
     std::vector< std::string > years;
     std::vector< std::string > flavors;
@@ -447,18 +454,18 @@ int main( int argc, char* argv[] ){
     //set histogram style
     setTDRStyle();
 
-    //fill all prescale histograms in a multithreaded manner
-    std::vector< std::thread > threadVector_prescale;
-    threadVector_prescale.reserve( 3 );
-    for( const auto& year : years ){
-        threadVector_prescale.emplace_back( fillPrescaleMeasurementHistograms, year, sampleDirectory, triggerVectorMap[ year ], use_mT, metLowerCut_prescaleMeasurement, mTLowerCut_prescaleMeasurement );
-    }
-
-    //join the threads
-    for( auto& t : threadVector_prescale ){
-        t.join();
-    }
-    
+//    //fill all prescale histograms in a multithreaded manner
+//    std::vector< std::thread > threadVector_prescale;
+//    threadVector_prescale.reserve( 3 );
+//    for( const auto& year : years ){
+//        threadVector_prescale.emplace_back( fillPrescaleMeasurementHistograms, year, sampleDirectory, triggerVectorMap[ year ], use_mT, metLowerCut_prescaleMeasurement, mTLowerCut_prescaleMeasurement );
+//    }
+//
+//    //join the threads
+//    for( auto& t : threadVector_prescale ){
+//        t.join();
+//    }
+//    
     //map years to prescale measurement map
     std::map< std::string, std::map< std::string, Prescale > > prescaleMaps;
     for( const auto& year : years ){

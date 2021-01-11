@@ -438,8 +438,14 @@ double ttZ::fakeRateWeight( const Event& event, const std::shared_ptr< TH2 >& mu
 
 
 
-unsigned ttZ::SR_main(const int nL, const int nJ, const int nB){ //3 light leptons, OSSF
+unsigned ttZ::SR_main( const Event& event, const int nL, const int nJ, const int nB){ //3 light leptons, OSSF
     unsigned sr = 0;
+//    if( ( event.lepton( 0 ).pt() > 20 ) &&
+//        ( event.lepton( 1 ).pt() > 30 ) &&
+//        ( event.lepton( 2 ).pt() > 30 ) &&
+//        ( event.lepton( 0 ).pt() < 100 ) &&
+//        ( event.lepton( 1 ).pt() < 80 ) &&
+//        ( event.lepton( 2 ).pt() < 80 ) ) sr+=14;
     if( nL == 3){
         if( nB == 0 ){
             if ( nJ == 2 ) sr += 1;

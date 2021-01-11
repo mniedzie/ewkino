@@ -55,6 +55,7 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "nBJets", "number of b-jets (medium deep flavor)", 5, -0.5, 4.5 ),
         HistInfo( "nVertex", "number of vertices", 30, 0, 70 ),
 
+//        HistInfo( "ttZSR", "Signal Regions", 28, 0, 28 ),
         HistInfo( "ttZSR", "Signal Regions", 14, 0, 14 ),
         HistInfo( "ttZFlav", "Lepton flavors", 4, 0, 4 ),
 
@@ -70,7 +71,7 @@ std::vector< double > buildFillingVector( Event& event, const std::string& uncer
     
     auto varMap = ttZ::computeVariables( event, uncertainty );
     std::vector< double > fillValues;
-    unsigned searchttZ = ttZ::SR_main( event.numberOfFOLeptons(), ttZ::numberOfVariedJets( event, uncertainty ), ttZ::numberOfVariedBJets( event, uncertainty ) );
+    unsigned searchttZ = ttZ::SR_main( event, event.numberOfFOLeptons(), ttZ::numberOfVariedJets( event, uncertainty ), ttZ::numberOfVariedBJets( event, uncertainty ) );
     unsigned ttZFlav = ttZ::ttZFlavPlot( event );
     fillValues = {
         event.lepton( 0 ).pt(),
@@ -159,9 +160,9 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
     //add an additional histogram for the nonprompt prediction
     std::vector< Sample > sampleVec = treeReader.sampleVector();
     std::vector< std::vector< std::shared_ptr< TH1D > > > histograms( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 ) );
-	// loop over all histograms to be made
+    // loop over all histograms to be made
     for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-	    // loop over all sample types considered.
+        // loop over all sample types considered.
         for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
             if( p < sampleVec.size() ){
                 histograms[ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() );
@@ -173,18 +174,28 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
 
     //const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "prefire", "lepton_reco", "lepton_id" }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
     const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year, "scale", "pileup", "bTag_heavy_" + year, "bTag_light_" + year, "prefire", "lepton_reco", "lepton_id", "pdf" }; //, "scaleXsec", "pdfXsec" }
+    std::map< std::string, int > shapesIntMap{{"JEC_" + year, 0}, { "JER_" + year, 1}, {"scale", 2}, {"pileup", 3}, {"bTag_heavy_" + year, 4}, {"bTag_light_" + year, 5}, {"prefire", 6}, {"lepton_reco", 7}, {"lepton_id", 8}, {"pdf" , 9}};
+
     unsigned numberOfPdfVariations = 100;
- //   const std::vector< std::string > shapeUncNames = {  "JEC_" + year, "JER_" + year }; //, "pdf" }; //"scaleXsec", "pdfXsec" }
+    // histogram for each uncertianty, dist, process
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncDown;
     std::map< std::string, std::vector< std::vector< std::shared_ptr< TH1D > > > > histogramsUncUp;
-	// for each uncertainty
+    // histogram for each uncertianty, dist
+//    std::map< std::string, std::vector< std::shared_ptr< TH1D > > > histogramsUncDecompDown;
+//    std::map< std::string, std::vector< std::shared_ptr< TH1D > > > histogramsUncDecompUp;
+    std::vector<  std::vector< std::shared_ptr< TH1D > > > histogramsUncDecompDown( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( shapeUncNames.size() ) );
+    std::vector<  std::vector< std::shared_ptr< TH1D > > > histogramsUncDecompUp( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( shapeUncNames.size() ) );
+    // for each uncertainty
     for( const auto& unc : shapeUncNames ){
         histogramsUncDown[ unc ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
         histogramsUncUp[ unc ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 )  );
+
+//        histogramsUncDecompDown[ unc ] = std::vector< std::shared_ptr< TH1D > >( histInfoVector.size() );
+//        histogramsUncDecompUp[ unc ]   = std::vector< std::shared_ptr< TH1D > >( histInfoVector.size() );
         
-		//create a set of all histograms
+        //create a set of all histograms
         for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-		    // for each type of sample
+            // for each type of sample
             for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
                 if( p < sampleVec.size() ){
                     histogramsUncDown[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + unc + "Down" );
@@ -194,6 +205,8 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
                     histogramsUncUp[ unc ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_nonprompt" + unc + "Up" );
                 }
             }
+            histogramsUncDecompDown[ dist ][ shapesIntMap.at(unc) ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + unc + "Combined_Down" );
+            histogramsUncDecompUp[ dist ][ shapesIntMap.at(unc) ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + unc + "Combined_Up" );
         }
     }
 
@@ -202,9 +215,9 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
     // hard coded number of pdf variations!!
     for( unsigned pdf_i = 0; pdf_i < numberOfPdfVariations; ++pdf_i){
         histogramsPDFVars[ pdf_i ] = std::vector< std::vector< std::shared_ptr< TH1D > > >( histInfoVector.size(), std::vector< std::shared_ptr< TH1D > >( sampleVec.size() + 1 ) );
-		//create a set of all histograms
+        //create a set of all histograms
         for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-		    // for each pdf variation
+            // for each pdf variation
             for( size_t p = 0; p < sampleVec.size() + 1; ++p ){
                 if( p < sampleVec.size() ){
                     histogramsPDFVars[ pdf_i ][ dist ][ p ] = histInfoVector[ dist ].makeHist( histInfoVector[ dist ].name() + "_" + sampleVec[p].uniqueName() + "_pdf_" + std::to_string( pdf_i ) );
@@ -242,7 +255,6 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
             }
 
 //            if(entry > treeReader.numberOfEntries()/20) break;            
-            if(entry > 10000) break;
 //            if(entry > 1000) break;
             //apply baseline selection
 
@@ -368,9 +380,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
           //fill scale down histograms
           double weightScaleDown;
           if( sampleHasPdfAndScale ){
-            std::cout << "bool is true" << std::endl;
               weightScaleDown =  event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5();
-            std::cout << "does it pass to scale extraction?" << std::endl;
           } else {
               weightScaleDown = 1.;
           }
@@ -583,106 +593,116 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
     }
 
     //merge process histograms for uncertainties 
-	std::map< std::string, std::vector< std::vector< TH1D* > > > mergedHistogramsUncDown;
-	std::map< std::string, std::vector< std::vector< TH1D* > > > mergedHistogramsUncUp;
+    std::map< std::string, std::vector< std::vector< TH1D* > > > mergedHistogramsUncDown;
+    std::map< std::string, std::vector< std::vector< TH1D* > > > mergedHistogramsUncUp;
 
-	for( const auto& unc : shapeUncNames ){
-		mergedHistogramsUncDown[ unc ] = std::vector< std::vector< TH1D* > >( histInfoVector.size(), std::vector< TH1D* >( proc.size() ) );
-		mergedHistogramsUncUp[ unc ] = std::vector< std::vector< TH1D* > >( histInfoVector.size(), std::vector< TH1D* >( proc.size() ) );
-		for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-			for( size_t m = 0, sample = 0; m < proc.size() - 1; ++m ){
-				mergedHistogramsUncDown[ unc ][ dist ][ m ] = dynamic_cast< TH1D* >( histogramsUncDown[ unc ][ dist ][ sample ]->Clone() );
-				mergedHistogramsUncUp[ unc ][ dist ][ m ] = dynamic_cast< TH1D* >( histogramsUncUp[ unc ][ dist ][ sample ]->Clone() );
-				//while( sample < numberOfBackgrounds - 1 && sampleVec[ sample ].processName() == sampleVec[ sample + 1 ].processName() ){
-				while( sample < sampleVec.size() - 1 && sampleVec[ sample ].processName() == sampleVec[ sample + 1 ].processName() ){
-					mergedHistogramsUncDown[ unc ][ dist ][ m ]->Add( histogramsUncDown[ unc ][ dist ][ sample + 1].get() );
-					mergedHistogramsUncUp[ unc ][ dist ][ m ]->Add( histogramsUncUp[ unc ][ dist ][ sample + 1].get() );
-					++sample;
-				}
-				++sample;
-			}
-			mergedHistogramsUncDown[ unc ][ dist ][ proc.size() - 1 ] = dynamic_cast< TH1D * >( histogramsUncDown[ unc ][ dist ].back()->Clone() );
-			mergedHistogramsUncUp[ unc ][ dist ][ proc.size() - 1 ] = dynamic_cast< TH1D * >( histogramsUncUp[ unc ][ dist ].back()->Clone() );
-		}
-	}
+    for( const auto& unc : shapeUncNames ){
+        mergedHistogramsUncDown[ unc ] = std::vector< std::vector< TH1D* > >( histInfoVector.size(), std::vector< TH1D* >( proc.size() ) );
+        mergedHistogramsUncUp[ unc ] = std::vector< std::vector< TH1D* > >( histInfoVector.size(), std::vector< TH1D* >( proc.size() ) );
+        for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+            for( size_t m = 0, sample = 0; m < proc.size() - 1; ++m ){
+                mergedHistogramsUncDown[ unc ][ dist ][ m ] = dynamic_cast< TH1D* >( histogramsUncDown[ unc ][ dist ][ sample ]->Clone() );
+                mergedHistogramsUncUp[ unc ][ dist ][ m ] = dynamic_cast< TH1D* >( histogramsUncUp[ unc ][ dist ][ sample ]->Clone() );
+                //while( sample < numberOfBackgrounds - 1 && sampleVec[ sample ].processName() == sampleVec[ sample + 1 ].processName() ){
+                while( sample < sampleVec.size() - 1 && sampleVec[ sample ].processName() == sampleVec[ sample + 1 ].processName() ){
+                    mergedHistogramsUncDown[ unc ][ dist ][ m ]->Add( histogramsUncDown[ unc ][ dist ][ sample + 1].get() );
+                    mergedHistogramsUncUp[ unc ][ dist ][ m ]->Add( histogramsUncUp[ unc ][ dist ][ sample + 1].get() );
+                    ++sample;
+                }
+                ++sample;
+            }
+            mergedHistogramsUncDown[ unc ][ dist ][ proc.size() - 1 ] = dynamic_cast< TH1D * >( histogramsUncDown[ unc ][ dist ].back()->Clone() );
+            mergedHistogramsUncUp[ unc ][ dist ][ proc.size() - 1 ] = dynamic_cast< TH1D * >( histogramsUncUp[ unc ][ dist ].back()->Clone() );
+        }
+    }
 
     //make total uncertainty histograms for plotting
-	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
-	double lumiUncertainty = 1.025;
+    const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
+    double lumiUncertainty = 1.025;
     std::vector<double> flatUnc = { lumiUncertainty, 1.02 }; //lumi, trigger
 //    std::map< std::string, double > backgroundSpecificUnc;
 //    if( controlRegion == "TTZ" || controlRegion == "NP" ){
 //        backgroundSpecificUnc = {
-//	    	{"Nonprompt", 1.3},
-//	    	{"WZ", 1.1},
-//	    	{"X + #gamma", 1.1},
-//	    	{"ZZ/H", 1.1},
-//	    	{"t#bar{t}/t + X", 1.15 },
-//	    	{"Multiboson", 1.5}
-//	    };
+//            {"Nonprompt", 1.3},
+//            {"WZ", 1.1},
+//            {"X + #gamma", 1.1},
+//            {"ZZ/H", 1.1},
+//            {"t#bar{t}/t + X", 1.15 },
+//            {"Multiboson", 1.5}
+//        };
 //    } else {
 //        backgroundSpecificUnc = {
-//	    	{"Nonprompt", 1.3},
-//	    	{"WZ", 1.1},
-//	    	{"X + #gamma", 1.1},
-//	    	{"ZZ/H", 1.1},
-//	    	{"t#bar{t}/t + X", 1.5 },
-//	    	{"Multiboson", 1.5}
-//	    };
+//            {"Nonprompt", 1.3},
+//            {"WZ", 1.1},
+//            {"X + #gamma", 1.1},
+//            {"ZZ/H", 1.1},
+//            {"t#bar{t}/t + X", 1.5 },
+//            {"Multiboson", 1.5}
+//        };
 //    }
 
     //const std::set< std::string > acceptedShapes = { "JEC_" + year, "JER_" + year, "uncl", "scale", "pileup", "bTag_" + year, "prefire", "lepton_reco", "lepton_id"}
     //const std::set< std::string > acceptedShapes = { "JEC_" + year, "scale", "bTag_" + year, "prefire", "lepton_reco", "lepton_id"};
     //const std::set< std::string > acceptedShapes = { "JEC_" + year };
 
-	std::vector< TH1D* > totalSystUncertainties( histInfoVector.size() );
-	for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-		totalSystUncertainties[ dist ] = dynamic_cast< TH1D* >( mergedHistograms[ dist ][ 0 ]->Clone() );
-		for( int bin = 1; bin < totalSystUncertainties[ dist ]->GetNbinsX() + 1; ++bin ){
-			double binUnc = 0;
+    std::vector< TH1D* > totalSystUncertainties( histInfoVector.size() );
+    for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
+        totalSystUncertainties[ dist ] = dynamic_cast< TH1D* >( mergedHistograms[ dist ][ 0 ]->Clone() );
+        for( int bin = 1; bin < totalSystUncertainties[ dist ]->GetNbinsX() + 1; ++bin ){
+            double binUnc = 0;
 
-			//add shape uncertainties
-			for( auto& shape : shapeUncNames ){
+            //add shape uncertainties
+            for( auto& shape : shapeUncNames ){
                 //if( acceptedShapes.find( shape ) == acceptedShapes.cend() ) continue;
-				bool nuisanceIsUncorrelated = ( std::find( uncorrelatedBetweenProcesses.cbegin(), uncorrelatedBetweenProcesses.cend(), shape ) != uncorrelatedBetweenProcesses.cend() );
+                bool nuisanceIsUncorrelated = ( std::find( uncorrelatedBetweenProcesses.cbegin(), uncorrelatedBetweenProcesses.cend(), shape ) != uncorrelatedBetweenProcesses.cend() );
 
-				//correlated case : linearly add up and down variations
-				double varDown = 0.;
-				double varUp = 0.;
+                //correlated case : linearly add up and down variations
+                double varDown = 0.;
+                double varUp = 0.;
 
-				//uncorrelated case : quadratically add the maximum of the up and down variations
-				double var = 0.;
+                //uncorrelated case : quadratically add the maximum of the up and down variations
+                double var = 0.;
 
-				for( size_t p = 1; p < proc.size(); ++p ){
-					double nominalContent = mergedHistograms[ dist ][ p ]->GetBinContent( bin );
-					double downVariedContent = mergedHistogramsUncDown[ shape ][ dist ][ p ]->GetBinContent( bin );
-					double upVariedContent = mergedHistogramsUncUp[ shape ][ dist ][ p ]->GetBinContent( bin );
-					double down = fabs( downVariedContent - nominalContent );
-					double up = fabs( upVariedContent - nominalContent );
+                for( size_t p = 1; p < proc.size(); ++p ){
+                    double nominalContent = mergedHistograms[ dist ][ p ]->GetBinContent( bin );
+                    double downVariedContent = mergedHistogramsUncDown[ shape ][ dist ][ p ]->GetBinContent( bin );
+                    double upVariedContent = mergedHistogramsUncUp[ shape ][ dist ][ p ]->GetBinContent( bin );
+                    double down = fabs( downVariedContent - nominalContent );
+                    double up = fabs( upVariedContent - nominalContent );
                     
-					//uncorrelated case : 
-					if( nuisanceIsUncorrelated ){
-					    double variation = std::max( down, up );
-					    var += variation*variation;
-					
-					//correlated case :     
-					} else {
-					    varDown += down;
-					    varUp += up;
-					}
+                    //uncorrelated case : 
+                    if( nuisanceIsUncorrelated ){
+                        double variation = std::max( down, up );
+                        var += variation*variation;
+                    
+                    //correlated case :     
+                    } else {
+                        varDown += down;
+                        varUp += up;
+                    }
 
-				}
-				//correlated case : 
-				if( !nuisanceIsUncorrelated ){
-				    var = std::max( varDown, varUp );
-				    var = var*var;
-				}
-				
-				//add (already quadratic) uncertainties 
-				binUnc += var;
-			}
+                }
+                //correlated case : 
+                if( !nuisanceIsUncorrelated ){
+                    var = std::max( varDown, varUp );
+                    var = var*var;
+                }
+                
+                //add (already quadratic) uncertainties 
+                binUnc += var;
 
-			//add general flat uncertainties (considered correlated among all processes)
+                //uncorrelated case : 
+                if( nuisanceIsUncorrelated ){
+                    histogramsUncDecompDown[ dist ][ shapesIntMap.at(shape) ]->SetBinContent( bin, sqrt( var ) * -1. );
+                    histogramsUncDecompUp[   dist ][ shapesIntMap.at(shape) ]->SetBinContent(   bin, sqrt( var ) );
+                    //correlated case :     
+                } else {
+                    histogramsUncDecompDown[ dist ][ shapesIntMap.at(shape) ]->SetBinContent( bin, varDown * -1. );
+                    histogramsUncDecompUp[   dist ][ shapesIntMap.at(shape) ]->SetBinContent(   bin, varUp );
+                }
+            }
+
+            //add general flat uncertainties (considered correlated among all processes)
             for( double unc : flatUnc ){
                 double var = 0;
                 for( size_t p = 1; p < proc.size(); ++p ){
@@ -707,10 +727,10 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
 //            }
 
             //square root of quadratic sum is total uncertainty
-        	totalSystUncertainties[ dist ]->SetBinContent( bin, sqrt( binUnc ) );
-		}
-	}
-	
+            totalSystUncertainties[ dist ]->SetBinContent( bin, sqrt( binUnc ) );
+        }
+    }
+    
     //make plots
     for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
         std::string header;
@@ -732,6 +752,9 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         systemTools::makeDirectory( directoryName );
         plotDataVSMC( mergedHistograms[dist][0], &mergedHistograms[dist][1], &proc[0], proc.size() - 1, directoryName + histInfoVector[ dist ].name() + plotNameAddition + ".pdf" , "ttZ", false, false, header, totalSystUncertainties[ dist ], nullptr );
         plotDataVSMC( mergedHistograms[dist][0], &mergedHistograms[dist][1], &proc[0], proc.size() - 1, directoryName + histInfoVector[ dist ].name() + plotNameAddition + "_log.pdf" , "ttZ", true, false, header, totalSystUncertainties[ dist ], nullptr );
+
+        plotUncAll( &mergedHistograms[dist][1], proc.size() - 1, histogramsUncDecompUp[dist], histogramsUncDecompDown[dist], &shapeUncNames[0], shapeUncNames.size(), directoryName + histInfoVector[ dist ].name() + plotNameAddition + "_unc.pdf", 1.5 );
+//        plotUncAll( &mergedHistograms[dist][1], proc.size() - 1, histogramsUncDecompUp[dist], histogramsUncDecompDown[dist], &shapeUncNames[0], shapeUncNames.size(), directoryName + histInfoVector[ dist ].name() + plotNameAddition + "_uncZoom.pdf", 0.5 );
     }
 
     // prepare root file for datacards / combine
@@ -741,30 +764,27 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
     TFile *file = TFile::Open( shape_name.c_str(), "RECREATE");
     std::vector< std::string > proc_names = {"data_obs", "ttZ", "ttX", "WZ", "Xgamma", "ZZ", "rare", "Nonprompt",  };
     TH1D *hist, *histUp, *histDown;
-//    for( size_t dist = 0; dist < histInfoVector.size(); ++dist ){
-	    // loop over all sample types considered.
-        for( size_t p = 0; p < proc.size() ; ++p ){
-            const char * name = proc_names[p].c_str();
-            hist = (TH1D*)(*mergedHistograms[ 13 ][ p ]).Clone( name );
-            hist->SetName( name );
-            hist->Write();
-            for( const auto& unc : shapeUncNames ){
-                std::string nameUp = proc_names[p]+"_"+unc+"Up";
+    // loop over all sample types considered.
+    for( size_t p = 0; p < proc.size() ; ++p ){
+        const char * name = proc_names[p].c_str();
+        hist = (TH1D*)(*mergedHistograms[ 13 ][ p ]).Clone( name );
+        hist->SetName( name );
+        hist->Write();
+        for( const auto& unc : shapeUncNames ){
+            std::string nameUp = proc_names[p]+"_"+unc+"Up";
 
-                histUp = (TH1D*)(*mergedHistogramsUncUp[ unc ][ 13 ][ p ]).Clone( nameUp.c_str() );
-                histUp->SetName( nameUp.c_str() );
-                histUp->Write();
+            histUp = (TH1D*)(*mergedHistogramsUncUp[ unc ][ 13 ][ p ]).Clone( nameUp.c_str() );
+            histUp->SetName( nameUp.c_str() );
+            histUp->Write();
 
-                std::string nameDown = proc_names[p]+"_"+unc+"Down";
+            std::string nameDown = proc_names[p]+"_"+unc+"Down";
 
-                histDown = (TH1D*)(*mergedHistogramsUncDown[ unc ][ 13 ][ p ]).Clone( nameDown.c_str() );
-                histDown->SetName( nameDown.c_str() );
-                histDown->Write();
-            }
+            histDown = (TH1D*)(*mergedHistogramsUncDown[ unc ][ 13 ][ p ]).Clone( nameDown.c_str() );
+            histDown->SetName( nameDown.c_str() );
+            histDown->Write();
         }
-//    }
-   file->Close();
-
+    }
+    file->Close();
 }
 
 

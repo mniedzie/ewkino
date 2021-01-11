@@ -35,8 +35,17 @@ void histcol(TH1D* h, const Color_t color){
 void StackCol(TH1D* h, const Color_t color){
     histcol(h,color);
     h->SetFillColor(color);
-    h->SetLineWidth(1);
+    h->SetLineWidth(2);
     h->SetLineColor(kBlack); //black line between the stack elements
+}
+
+
+//set color of histogram to be plotted in a stack
+void UncCol(TH1D* h, const Color_t color){
+    histcol(h,color);
+    h->SetFillColor(0);
+    h->SetLineWidth(2);
+    h->SetLineColor(color); //black line between the stack elements
 }
 
 
@@ -112,7 +121,21 @@ Color_t bkgColorHNL(const std::string& bkgName){
 }
 
 
-    std::vector< std::string > proc = {"Data", "ttZ", "ttX", "WZ", "Xgamma", "ZZ", "rare", "Nonprompt",  };
+Color_t bkgColorUnc(const std::string& bkgName){
+    if(     bkgName == "JEC_2016" || bkgName == "JEC_2017" || bkgName == "JEC_2018" ) return kAzure + 1;
+    else if(bkgName == "JER_2016" || bkgName == "JER_2017" || bkgName == "JER_2018" ) return kRed - 7;
+    else if(bkgName == "scale") return  kGreen + 1; //+ 1// -7 // -9
+    else if(bkgName == "pdf") return  kGreen - 1; //+ 1// -7 // -9
+    else if(bkgName == "pileup" ) return kMagenta - 7;
+    else if(bkgName == "bTag_heavy_2016" || bkgName == "bTag_heavy_2017" || bkgName == "bTag_heavy_2018" ) return kOrange + 6;
+    else if(bkgName == "bTag_light_2016" || bkgName == "bTag_light_2017" || bkgName == "bTag_light_2018" ) return kOrange + 2;
+    else if(bkgName == "prefire") return kBlue - 7;
+    else if(bkgName == "lepton_reco") return kCyan + 1;
+    else if(bkgName == "lepton_id") return kCyan;
+    else return kBlack;
+}
+
+
 Color_t bkgColorttZ(const std::string& bkgName){
     if(bkgName == "non-prompt") return kBlue-9;
     else if(bkgName == "nonprompt") return kBlue-9;
@@ -124,6 +147,15 @@ Color_t bkgColorttZ(const std::string& bkgName){
     else if(bkgName == "Xgamma") return kGreen;
     else if(bkgName == "ZZ") return kGreen+3;
     else if(bkgName == "rare") return 8;
+    else return kBlack;
+}
+
+
+Color_t bkgColorFR(const std::string& bkgName){
+    if(bkgName == "b") return kGreen+3;
+    else if(bkgName == "c") return kGreen;
+    else if(bkgName == "light") return 51;
+    else if(bkgName == "boson") return kRed;
     else return kBlack;
 }
 
@@ -153,6 +185,10 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
         return bkgColorEWKDilept(bkgName);
     } else if(analysis == "ttZ"){
         return bkgColorttZ(bkgName);
+    } else if(analysis == "FR"){
+        return bkgColorFR(bkgName);
+    } else if(analysis == "uncertainty"){
+        return bkgColorUnc(bkgName);
     } else{
         return bkgColorGeneral();
     }
@@ -554,6 +590,401 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
 	plotLock.unlock();
 }
+
+
+// Plot uncertainties
+void plotUncAll( TH1D** bkg, const unsigned nBkg,  std::vector< std::shared_ptr< TH1D > > uncUp, std::vector< std::shared_ptr< TH1D > > uncDown, const std::string* names, const unsigned nUnc, const std::string& file, double plotScale ){
+
+   	static std::mutex plotLock;
+    plotLock.lock(); 
+
+    initializeTDRStyle();
+    
+    //do not make empty plots
+    bool isEmpty = true;
+    for(unsigned h = 0; h < nUnc; ++h){
+        if( ( uncUp[h]->GetSumOfWeights() > 0 ) || ( uncDown[h]->GetSumOfWeights() > 0 ) ){
+            isEmpty = false;
+            break;
+        }  
+    }
+
+    if(isEmpty){
+        std::cerr << "attempting to print empty plot, returning control" << std::endl;
+	    plotLock.unlock();
+        return;
+    }
+
+    //Compute total background (needed later for uncertainty bands)
+    TH1D* bkgTot = (TH1D*) bkg[0]->Clone();
+    for(unsigned h = 1; h < nBkg; ++h){
+        bkgTot->Add(bkg[h]);
+    }
+
+    // normalize uncertainties to total backgrounds
+    for(unsigned h = 0; h < nUnc; ++h){
+        uncUp[h]   -> Divide(bkgTot);
+        uncDown[h] -> Divide(bkgTot);
+        uncUp[h]   -> GetYaxis()->SetTitle("Rel. unc [\%]");
+        uncDown[h] -> GetYaxis()->SetTitle("Rel. unc [\%]");
+    }    
+
+    //set background histogram colors
+    for(unsigned h = 0; h < nUnc; ++h){
+        UncCol( uncUp[h].get(), bkgColor( names[h], "uncertainty") ); //first name is data
+        UncCol( uncDown[h].get(), bkgColor( names[h], "uncertainty") ); //first name is data
+    }    
+
+    //make legend and add all histograms
+    TLegend legend = TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC");
+    legend.SetNColumns(2);
+    legend.SetFillStyle(0); //avoid legend box
+    for(unsigned h = 0; h < nUnc; ++h){
+        legend.AddEntry(uncUp[h].get(), (const TString&) names[h], "l"); //add backgrounds to the legend
+    }
+
+    //canvas dimenstions
+    const double width = 600*(1 - xPad);
+    const double height = 400;
+
+    //make canvas to plot
+    TCanvas* c = new TCanvas((const TString&) file,"",width,height);
+    c->cd();
+
+    //make pad to draw main plot
+    TPad* p1;
+
+    //prepare first pad for plotting data and background yields
+    p1 = new TPad((const TString&) file, "", 0, 0.05, 1, 1);
+    p1->Draw();
+    p1->cd();
+    //p1->SetBottomMargin(0.03);
+    
+    /*
+    From now on we will determine the range of the plot from the total background histogram which will always be drawn first
+    in order to force the range of the canvas.
+    */
+
+    //determine the maximum range of data and the backgrounds
+    double maxUp   = uncUp[0] -> GetBinContent( uncUp[0]->GetMaximumBin() );
+    double maxDown = uncUp[0] -> GetBinContent( uncUp[0]->GetMinimumBin() );
+    for(unsigned h = 1; h < nUnc; ++h){
+        maxUp   = std::max( maxUp,   uncUp[h]   -> GetBinContent( uncUp[h]  ->GetMaximumBin() ) );
+        maxDown = std::min( maxDown, uncDown[h] -> GetBinContent( uncDown[h]->GetMinimumBin() ) );
+    }
+    
+    //determine upper limit of plot
+    uncUp[0]->SetMaximum(maxUp*plotScale);
+    uncUp[0]->SetMinimum(maxDown*plotScale);
+    uncDown[0]->SetMaximum(maxUp*plotScale);
+    uncDown[0]->SetMinimum(maxDown*plotScale);
+
+    //draw histograms and legends
+    //first draw total background to fix plot range
+    uncUp[0]->Draw("hist");
+    for(unsigned h = 1; h < nUnc; ++h){
+        uncUp[h]->Draw("hist same");
+    }
+    uncDown[0]->Draw("hist same");
+    for(unsigned h = 1; h < nUnc; ++h){
+        uncDown[h]->Draw("hist same");
+    }
+    legend.Draw("same");
+
+    //redraw axis over histograms
+    gPad->RedrawAxis();
+
+    //draw CMS header
+    drawLumi(p1);
+
+    //save canvas to file
+    std::string outputPath = stringTools::fileNameWithoutExtension( file );
+    c->SaveAs( ( outputPath + ".pdf" ).c_str() );
+    c->SaveAs( ( outputPath + ".png" ).c_str() );
+    
+    //Clean up memory 
+    delete p1;
+    delete c;
+
+	plotLock.unlock();
+}
+
+// Plot observed and predicted as stacks. Used in FR closure in MC to plot flav separated plots
+void plotObsVSPred(TH1D** data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const std::string& header, TH1D* bkgSyst ){
+
+   	static std::mutex plotLock;
+    plotLock.lock(); 
+
+    initializeTDRStyle();
+    
+    //do not make empty plots
+    bool isEmpty = true;
+    for(unsigned h = 0; h < nBkg; ++h){
+        if(bkg[h]->GetSumOfWeights() > 0){
+            isEmpty = false;
+            break;
+        }
+        if(data[h]->GetSumOfWeights() > 0){
+            isEmpty = false;
+            break;
+        }
+    }
+    if(isEmpty){
+        std::cerr << "attempting to print empty plot, returning control" << std::endl;
+	    plotLock.unlock();
+        return;
+    }
+
+    //set background histogram colors
+    for(unsigned h = 0; h < nBkg; ++h){
+        StackCol(bkg[h], bkgColor(names[h], analysis) ); //first name is data
+        data[h]->SetLineColor( bkgColor(names[h], analysis) +1 );
+        data[h]->SetMarkerColor( bkgColor(names[h], analysis) +1 );
+        data[h]->SetLineWidth(3);
+        data[h]->SetFillStyle(0);
+//        StackCol(data[h], bkgColor(names[h], analysis) +3 ); //first name is data
+    }    
+        bkgColorGeneral(true); //reset colors so plots are consistent
+
+	//reset internal coloring counter
+    if( analysis == "" ) bkgColorGeneral(true);
+
+    //set Poisonian errors to data
+    for(unsigned h = 0; h < nBkg; ++h){
+        data[h]->SetBinErrorOption(TH1::kPoisson);
+    }
+
+    //Compute total background (needed later for uncertainty bands)
+    TH1D* bkgTot = (TH1D*) bkg[0]->Clone();
+    TH1D* dataTot = (TH1D*) data[0]->Clone();
+    for(unsigned h = 1; h < nBkg; ++h){
+        bkgTot->Add(bkg[h]);
+        dataTot->Add(data[h]);
+    }
+
+    //clone bkg histograms so they can be reordered and rescaled safely
+    TH1D* bkgClones[nBkg];
+    TH1D* dataClones[nBkg];
+    for(unsigned b = 0; b < nBkg; ++b){
+        bkgClones[b] = (TH1D*) bkg[b]->Clone();
+        dataClones[b] = (TH1D*) data[b]->Clone();
+    }
+
+    TH1D* bkgTotE = (TH1D*) bkgTot->Clone();
+    TH1D* dataTotE = (TH1D*) dataTot->Clone();
+    if( bkgSyst != nullptr ){
+        for(int bin = 1; bin < bkgTotE->GetNbinsX() + 1; ++bin){
+            double statError = bkgTot->GetBinError(bin);
+            double systError = bkgSyst->GetBinContent(bin);
+            bkgTotE->SetBinError(bin, sqrt( statError*statError + systError*systError) );
+        }
+        for(int bin = 1; bin < dataTotE->GetNbinsX() + 1; ++bin){
+            double statError = dataTot->GetBinError(bin);
+            dataTotE->SetBinError(bin, statError );
+        }
+    }
+
+    //make the total background uncertainty visible as a grey band
+    bkgTotE->SetFillStyle(3244); //3005  3244
+    bkgTotE->SetFillColor(kGray+2);
+    bkgTotE->SetMarkerStyle(0); //1
+
+    //make legend and add all histograms
+    TLegend legend = TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC");
+    legend.SetNColumns(2);
+    legend.SetFillStyle(0); //avoid legend box
+    for(unsigned h = 0; h < nBkg; ++h){
+        legend.AddEntry(bkgClones[h], (const TString&) (names[h]+" pred"), "f"); //add backgrounds to the legend
+        legend.AddEntry(dataClones[h], (const TString&) (names[h]+" obs"), "lp"); //add backgrounds to the legend
+    }
+    legend.AddEntry(bkgTotE, "Total bkg. unc.", "f"); //add total background uncertainty to legend
+
+    //add background histograms to stack
+    THStack bkgStack = THStack("bkgStack", "bkgStack");
+    THStack dataStack = THStack("dataStack", "dataStack");
+    for(unsigned h = 0; h < nBkg; ++h){
+        bkgStack.Add(bkgClones[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
+        dataStack.Add(dataClones[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
+    }
+    
+    //canvas dimenstions
+    const double width = 600*(1 - xPad);
+    const double height = 600;
+
+    //make canvas to plot
+    TCanvas* c = new TCanvas((const TString&) file,"",width,height);
+    c->cd();
+
+    //make upper pad to draw main plot and lower pad for ratios
+    TPad* p1,* p2;
+
+    //prepare first pad for plotting data and background yields
+    p1 = new TPad((const TString&) file,"",0,xPad,1,1);
+    p1->Draw();
+    p1->cd();
+    p1->SetBottomMargin(0.03);
+
+    //make pad logarithmic if needed
+    if(ylog) p1->SetLogy();
+    
+    /*
+    From now on we will determine the range of the plot from the total background histogram which will always be drawn first
+    in order to force the range of the canvas.
+    */
+
+    //set minimum to zero
+    if(!ylog) bkgTotE->SetMinimum(0);
+    
+    //x-axis labels will only be drawn in the lower (ratio) canvas
+    bkgTotE->GetXaxis()->SetLabelSize(0);
+
+    //determine the maximum range of data and the backgrounds
+    double totalMax = dataTotE->GetBinContent(dataTotE->GetMaximumBin()) + dataTotE->GetBinError(dataTotE->GetMaximumBin());
+    totalMax = std::max(totalMax, bkgTotE->GetBinContent(bkgTotE->GetMaximumBin()) + bkgTotE->GetBinError(bkgTotE->GetMaximumBin()) );
+    
+    //determine upper limit of plot
+    if(!ylog){
+        bkgTotE->SetMaximum(totalMax*1.5);
+    } else{
+        //set minimum to be 5 times smaller than the smallest total background yield
+        double minimum = totalMax; //find pad minimum when plotting on a log scale
+        for(int b = 1; b < bkgTotE->GetNbinsX() + 1; ++b){
+            if(bkgTotE->GetBinContent(b) != 0 && bkgTotE->GetBinContent(b) < minimum){
+                minimum = bkgTotE->GetBinContent(b);
+            }
+        }
+        minimum /= 5;
+        bkgTotE->SetMinimum(minimum);
+
+        //compute the number of axis divisions (i.e. powers of 10) between minimum and maxmimum 
+        double sf = log10( totalMax/minimum );
+
+        //maximum of plot should be 40% higher (in terms of canvas size!) than totalMax
+        double extraMagnitude = 0.4*sf;
+        double plotMax = totalMax*std::pow(10, extraMagnitude);
+        bkgTotE->SetMaximum( plotMax );
+    }			
+
+    //draw histograms and legends
+    //first draw total background to fix plot range
+    bkgTotE->Draw("e2");
+    bkgStack.Draw("hist same");
+    legend.Draw("same");
+    bkgTotE->Draw("e2 same"); //Redraw data so it is overlaid on the background stack
+    dataStack.Draw("lp same");
+
+    //redraw axis over histograms
+    gPad->RedrawAxis();
+
+    //draw CMS header
+    if(header == "") drawLumi(p1);
+    else drawLumi(p1, "Preliminary", (const TString&) header);
+
+    //make ratio plot in second pad
+    c->cd(); 
+    p2 = new TPad((const TString&) file + "2","",0,0.0,1,xPad);
+    p2->Draw();
+    p2->cd();
+    p2->SetTopMargin(0.01);     //small space between two pads
+    p2->SetBottomMargin(0.4);
+
+    //make separate histograms containing total and statistical background uncertainty which will be used to plot uncertainty bands
+    const unsigned nBins = dataTot->GetNbinsX();
+    TH1D* bkgStatErrors = new TH1D((const TString&) "bkgStaterrors" + file, (const TString&) "bkgStaterrors" + file, nBins, dataTot->GetBinLowEdge(1), dataTot->GetBinLowEdge(dataTot->GetNbinsX()) + dataTot->GetBinWidth(dataTot->GetNbinsX()));
+    TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();
+    for(unsigned b = 1; b < nBins + 1; ++b){
+        bkgStatErrors->SetBinContent(b, 1.);    //center bands around 0
+        bkgErrors->SetBinContent(b, 1.);
+        if(bkgTotE->GetBinContent(b) != 0){
+            bkgStatErrors->SetBinError(b, bkgTot->GetBinError(b)/bkgTot->GetBinContent(b));
+            bkgErrors->SetBinError(b, bkgTotE->GetBinError(b)/bkgTotE->GetBinContent(b));
+        } else{
+            bkgStatErrors->SetBinError(b, 0.);
+            bkgErrors->SetBinError(b, 0.);
+        }			
+    }
+
+    //set style of uncertainty bands 
+    bkgStatErrors->SetFillStyle(1001);
+    bkgErrors->SetFillStyle(1001);
+    bkgStatErrors->SetFillColor(kCyan - 4);
+    bkgErrors->SetFillColor(kOrange - 4);
+    bkgStatErrors->SetMarkerStyle(1);
+    bkgErrors->SetMarkerStyle(1);
+
+    //make TGraph asymmErros to plot data with the correct uncertainties
+    TGraphAsymmErrors* obsRatio = new TGraphAsymmErrors(dataTot);
+    for(int b = 1; b < dataTot->GetNbinsX() + 1; ++b){
+        obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
+        obsRatio->SetPointError(b - 1, 0, 0, dataTot->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), dataTot->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
+
+		//hack to avoid plotting points at 0 with large errors
+        if(dataTot->GetBinContent(b) <= 0.) obsRatio->GetY()[b - 1] += 1e6;
+    }
+
+    //legend for uncertainties
+    TLegend legend2 = TLegend(0.18, 0.85, 0.94, 0.98, NULL, "brNDC");
+    legend2.SetNColumns(3); 
+    legend2.SetFillStyle(0); //avoid legend box 
+    legend2.AddEntry(bkgStatErrors, "Stat. pred. unc.", "f");
+    legend2.AddEntry(bkgErrors, "Total pred. unc.", "f");
+    legend2.AddEntry(obsRatio, "Obs./Pred.", "pe12");
+
+    /*
+    We will set up the range and label sizes of the plot using bkgErros. As such this histogram always has to be 
+    drawn first on the pad to fix the plotted labels.
+    */
+    bkgErrors->SetMarkerColor(1);
+    bkgErrors->SetLineColor(1);
+    bkgErrors->GetYaxis()->SetRangeUser(0.,1.999);
+    bkgErrors->GetYaxis()->SetTitle("Obs./Pred.");
+    bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
+    bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
+    bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
+    bkgErrors->GetYaxis()->SetLabelSize((1.-xPad)/xPad*0.05);
+    bkgErrors->GetXaxis()->SetLabelSize((1.-xPad)/xPad*0.05);
+    bkgErrors->GetXaxis()->SetLabelOffset((1-xPad)/xPad*0.009);
+    bkgErrors->GetXaxis()->SetTitleOffset((1-xPad)/xPad*0.32);
+
+    //draw objects on pad
+    bkgErrors->Draw("e2");
+    bkgErrors->Draw("e2 same");
+    bkgStatErrors->Draw("e2 same");
+    obsRatio->Draw("pe01 same");
+    legend2.Draw("same");
+    gPad->RedrawAxis();
+
+    //draw line at 1 on ratio plot
+    double xmax = dataTot->GetBinCenter(dataTot->GetNbinsX()) + dataTot->GetBinWidth(dataTot->GetNbinsX())/2;
+    double xmin = dataTot->GetBinCenter(0) + dataTot->GetBinWidth(0)/2;
+    TLine line = TLine(xmin, 1, xmax, 1);
+    line.SetLineStyle(2);
+    line.Draw("same");
+
+    //save canvas to file
+    std::string outputPath = stringTools::fileNameWithoutExtension( file );
+    c->SaveAs( ( outputPath + ".pdf" ).c_str() );
+    c->SaveAs( ( outputPath + ".png" ).c_str() );
+    
+    //Clean up memory 
+    delete obsRatio;
+    delete bkgStatErrors;
+    delete bkgTot;
+	delete bkgTotE;
+    delete dataTot;
+	delete dataTotE;
+    delete p1;
+    delete p2;
+    delete c;
+    for(unsigned bkg = 0; bkg < nBkg; ++bkg){
+        delete bkgClones[bkg];
+        delete dataClones[bkg];
+    }
+
+	plotLock.unlock();
+}
+
+
 
 void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
 

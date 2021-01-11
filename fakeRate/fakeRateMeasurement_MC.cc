@@ -100,8 +100,8 @@ int main(){
 
     std::vector< std::thread > threadVector;
     threadVector.reserve( 6 );
-//    for( const auto& flavor : {"muon", "electron" } ){
-    for( const auto& flavor : {"electron" } ){
+    for( const auto& flavor : {"muon", "electron" } ){
+//    for( const auto& flavor : {"muon" } ){
         for( const auto& year : {"2016", "2017", "2018" } ){
 //        for( const auto& year : {"2016"} ){
             std::string sampleListFile = std::string( "sampleLists/samples_tuneFOSelection_" ) + flavor + "_" + year + ".txt";

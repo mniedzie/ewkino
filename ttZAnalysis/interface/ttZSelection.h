@@ -36,7 +36,7 @@ namespace ttZ{
     double fakeRateWeight( const Event& event, const std::shared_ptr< TH2 >& muonMap, const std::shared_ptr< TH2 >& electronMap );
     bool passPhotonOverlapRemoval( const Event& event );
 
-    unsigned SR_main(const int nL, const int nJ, const int nB);
+    unsigned SR_main( const Event& event, const int nL, const int nJ, const int nB);
     unsigned ttZFlavPlot( const Event& event );
     unsigned ttZFlavPlot3L( const Event& event );
     unsigned ttZFlavPlot4L( const Event& event );

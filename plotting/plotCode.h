@@ -15,6 +15,7 @@ void histcol(TH1D*, const Color_t);
 
 //Set Stack colors
 void StackCol(TH1D*, const Color_t);
+void UncCol(TH1D*, const Color_t);
 
 //Set Histogram labelsizes
 void HistLabelSizes(TH1* h, const double xLabel = 0.045, const double xTitle = 0.05, const double yLabel = 0.045, const double yTitle = 0.045);
@@ -27,6 +28,10 @@ Color_t bkgColor(const std::string&, const std::string& analysis = "");
 
 //Plot background stack and compare to observed yields
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis = "", const bool ylog = false, const bool normToData = false, const std::string& header = "", TH1D* bkgSyst = nullptr, const bool* isSMSignal = nullptr, TH1D** signal = nullptr, const std::string* sigNames = nullptr, const unsigned nSig = 0, const bool sigNorm = true);
+// Plot observed and predicted as stacks. Used in FR closure in MC to plot flav separated plots
+void plotObsVSPred(TH1D** data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis = "", const bool ylog = false, const std::string& header = "", TH1D* bkgSyst = nullptr);
+//Plot uncertainty breakdown
+void plotUncAll( TH1D** bkg, const unsigned nBkg, std::vector<std::shared_ptr< TH1D > > uncUp, std::vector<std::shared_ptr< TH1D > > uncDown, const std::string* names, const unsigned nUnc, const std::string& file, double plotScale = 1.5 );
 
 //Plot and compare multiple distributions or single distribution
 void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized = false, const bool log = false);

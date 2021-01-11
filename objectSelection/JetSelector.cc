@@ -43,45 +43,45 @@ bool JetSelector::inBTagAcceptance() const{
 
 
 bool JetSelector::isBTaggedLoose2016() const{
-    return ( jetPtr->deepCSV() > bTagWP::looseDeepCSV2016()  );
+    return ( jetPtr->deepFlavor() > bTagWP::looseDeepFlavor2016()  );
 }
 
 
 bool JetSelector::isBTaggedLoose2017() const{
-    return ( jetPtr->deepCSV() > bTagWP::looseDeepCSV2017() ); 
+    return ( jetPtr->deepFlavor() > bTagWP::looseDeepFlavor2017() ); 
 }
 
 
 bool JetSelector::isBTaggedLoose2018() const{
-    return ( jetPtr->deepCSV() > bTagWP::looseDeepCSV2018() );
+    return ( jetPtr->deepFlavor() > bTagWP::looseDeepFlavor2018() );
 }
         
 
 bool JetSelector::isBTaggedMedium2016() const{
-    return ( jetPtr->deepCSV() > bTagWP::mediumDeepCSV2016() );
+    return ( jetPtr->deepFlavor() > bTagWP::mediumDeepFlavor2016() );
 }
 
 
 bool JetSelector::isBTaggedMedium2017() const{
-    return ( jetPtr->deepCSV() > bTagWP::mediumDeepCSV2017() );
+    return ( jetPtr->deepFlavor() > bTagWP::mediumDeepFlavor2017() );
 }
 
 
 bool JetSelector::isBTaggedMedium2018() const{
-    return ( jetPtr->deepCSV() > bTagWP::mediumDeepCSV2018() );
+    return ( jetPtr->deepFlavor() > bTagWP::mediumDeepFlavor2018() );
 }
 
 
 bool JetSelector::isBTaggedTight2016() const{
-    return ( jetPtr->deepCSV() > bTagWP::tightDeepCSV2016() );
+    return ( jetPtr->deepFlavor() > bTagWP::tightDeepFlavor2016() );
 }
 
 
 bool JetSelector::isBTaggedTight2017() const{
-    return ( jetPtr->deepCSV() > bTagWP::tightDeepCSV2017() );
+    return ( jetPtr->deepFlavor() > bTagWP::tightDeepFlavor2017() );
 }
 
 
 bool JetSelector::isBTaggedTight2018() const{
-    return ( jetPtr->deepCSV() > bTagWP::tightDeepCSV2018() );
+    return ( jetPtr->deepFlavor() > bTagWP::tightDeepFlavor2018() );
 }

@@ -70,54 +70,27 @@ bool MuonSelector::isFOBase() const{
 
 bool MuonSelector::isFO2016() const{
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        // 0.0614-0.3093-0.7221
-//        if( muonPtr->closestJetDeepFlavor() >= (0.0614-0.03) ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.3093 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.7221 ) return false;
         double deepFlavorCut = slidingDeepFlavorThreshold( 0.0314, 0.0514, muonPtr->uncorrectedPt() );
         if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-    }// else {
-//        if( muonPtr->closestJetDeepFlavor() >= 0.0614 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.3093 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.7221 ) return false;
-//      if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2016() ) return false;
-//    }
+    }
     return true;
 }
 
 
 bool MuonSelector::isFO2017() const{
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-// 0.0521-0.3033-0.7489
-//        if( muonPtr->closestJetDeepFlavor() >= (0.0521-0.03) ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.3033 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.7489 ) return false;
         double deepFlavorCut = slidingDeepFlavorThreshold( 0.0521, 0.0421, muonPtr->uncorrectedPt() );
         if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-    }// else {
-//        if( muonPtr->closestJetDeepFlavor() >= 0.0521 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.3033 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.7489 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2017() ) return false;
-//    }
+    }
     return true;
 }
 
 
 bool MuonSelector::isFO2018() const{
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        // 0.0494-0.2770-0.7264
-//        if( muonPtr->closestJetDeepFlavor() >= (0.0494-0.03) ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.2770 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.7264 ) return false;
         double deepFlavorCut = slidingDeepFlavorThreshold( 0.0494, 0.0394, muonPtr->uncorrectedPt() );
         if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
-    }// else {
-//        if( muonPtr->closestJetDeepFlavor() >= 0.0494 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.2770 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= 0.7264 ) return false;
-//        if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2018() ) return false;
-//    }
+    }
     return true;
 }
 
@@ -129,7 +102,6 @@ tight muon selection
 bool MuonSelector::isTightBase() const{
     if( !isFO() ) return false;
     if( !muonPtr->isMediumPOGMuon() ) return false;
-//    if( muonPtr->leptonMVAtZq() <= leptonMVACutMuon() ) return false;
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ) return false;
     return true;
 }

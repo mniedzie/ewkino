@@ -30,6 +30,7 @@ std::map< std::string, double > ttZ::computeVariables( Event& event, const std::
      else l.SetPtEtaPhi( lep2.pt(), lep2.eta(), lep2.phi());
 
     cosTheta = Z*l / (sqrt(Z*Z) * sqrt(l*l)); 
+    ptZ = Z.Pt();
 
     double gamma   = TMath::Sqrt( 1 + TMath::Power(Z.Pt()/event.bestZBosonCandidateMass() ,2) * TMath::Power(TMath::CosH(Z.Eta()),2) );
 

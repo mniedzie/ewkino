@@ -25,6 +25,7 @@ namespace ttZ{
     bool passSelectionWZCR( Event& event, const std::string& uncertainty );
     bool passSelectionDYCR( Event& event, const std::string& uncertainty );
     bool passSelectionttbarCR( Event& event, const std::string& uncertainty );
+    bool passSelectionXgammaCR( Event& event, const std::string& uncertainty );
     bool passSelectionZZCR( Event& event, const std::string& uncertainty );
 
     bool passVariedSelectionNPCR( Event& event, const std::string& uncertainty );

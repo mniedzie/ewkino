@@ -55,8 +55,8 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "nBJets", "number of b-jets (medium deep flavor)", 5, -0.5, 4.5 ),
         HistInfo( "nVertex", "number of vertices", 30, 0, 70 ),
 
-//        HistInfo( "ttZSR", "Signal Regions", 28, 0, 28 ),
-        HistInfo( "ttZSR", "Signal Regions", 14, 0, 14 ),
+        HistInfo( "ttZSR", "Signal Regions", 28, 0, 28 ),
+//        HistInfo( "ttZSR", "Signal Regions", 14, 0, 14 ),
         HistInfo( "ttZFlav", "Lepton flavors", 4, 0, 4 ),
 
         HistInfo( "ptZ", "p_{T}^{Z} [GeV]", 16, 0, 400 ),
@@ -120,6 +120,7 @@ void analyze( const std::string& year, const std::string& controlRegion, const s
         { "WZ", ttZ::passSelectionWZCR},
         { "DY", ttZ::passSelectionDYCR},
         { "ttbar", ttZ::passSelectionttbarCR},
+        { "XGamma", ttZ::passSelectionXgammaCR},
         { "ZZ", ttZ::passSelectionZZCR},
         { "TTZ", ttZ::passSelectionTTZ }
     };
@@ -804,7 +805,7 @@ int main( int argc, char* argv[] ){
     // but it's irrelevant here and vectors will be more convenient to handle.
     // std::set< std::string > years; years.insert("2016"); years.insert("2017"); years.insert("2018");
     std::vector< std::string > years{"2016", "2017", "2018"};
-    std::vector< std::string > cRegions{"ttZ", "ttZclean", "WZ", "DY", "ttbar", "ZZ", "TTZ"};
+    std::vector< std::string > cRegions{"ttZ", "ttZclean", "WZ", "DY", "ttbar", "XGamma", "ZZ", "TTZ"};
     std::vector< std::string > processes{"data", "ttZ", "ttX", "WZ", "Xgam", "ZZ", "rare", "all"};
 
     // if not enough arguments, complain. Last argument is optional
@@ -826,7 +827,7 @@ int main( int argc, char* argv[] ){
         std::cerr << "At least one of arguments not recognized" << std::endl;
         std::cerr << "allowed arguments:" << std::endl;
         std::cerr << "year:                          2016, 2017, 2018"                      << std::endl;
-        std::cerr << "control region:                ttZ, ttZclean, WZ, DY, ttbar, ZZ, TTZ" << std::endl;
+        std::cerr << "control region:                ttZ, ttZclean, WZ, DY, ttbar, XGamma, ZZ, TTZ" << std::endl;
         std::cerr << "process to analyze (optional): data, ttZ, ttX, WZ, Xgam, ZZ, rare"    << std::endl;
         return 1;
     }

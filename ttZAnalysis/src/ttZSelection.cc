@@ -244,6 +244,12 @@ bool ttZ::passSelectionDYCR( Event& event, const std::string& uncertainty ){
     if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
     if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) > 10 ) return false;
 
+    // low MET and MT(met, 3rd lepton)
+    Met met = variedMet( event, uncertainty );
+    if( met.pt() > 60 ) return false;
+    double mT3 = mt( met, event.lepton( 2 ) );
+    if( mT3 > 30 ) return false;
+
     // and with trilepton mass close to Z pole
     std::vector< LeptonCollection::size_type > ind2Zcand;
     for( LeptonCollection::size_type l = 0; l < event.numberOfLeptons(); ++l ){
@@ -276,6 +282,27 @@ bool ttZ::passSelectionttbarCR( Event& event, const std::string& uncertainty ){
      if (mlll < 101 ) return false;
      else if ( (std::abs( event.bestZBosonCandidateMass() - particle::mZ ) > 10) &&
                numberOfVariedBJets( event, uncertainty ) == 0  ) return false;
+
+    return true;
+}
+
+
+bool ttZ::passSelectionXgammaCR( Event& event, const std::string& uncertainty ){
+
+    // exactly 3 leptons
+    if ( event.numberOfFOLeptons() != 3 ) return false;
+
+    // no Z boson candidate
+    if ( !( event.hasOSSFLightLeptonPair() ) ) return false;
+
+    // and with trilepton mass close below 101 GeV
+//    std::vector< LeptonCollection::size_type > ind2Zcand;
+//    for( LeptonCollection::size_type l = 0; l < event.numberOfLeptons(); ++l ){
+//        if( ( l == event.bestZBosonCandidateIndices().first ) || ( l == event.bestZBosonCandidateIndices().second ) ) continue;
+//        ind2Zcand.push_back(l);
+//    }
+    double mlll = ( event.leptonCollection()[0] + event.leptonCollection()[1] + event.leptonCollection()[2] ).mass();
+     if ( std::abs( mlll - particle::mZ ) > 10 ) return false;
 
     return true;
 }
@@ -440,12 +467,12 @@ double ttZ::fakeRateWeight( const Event& event, const std::shared_ptr< TH2 >& mu
 
 unsigned ttZ::SR_main( const Event& event, const int nL, const int nJ, const int nB){ //3 light leptons, OSSF
     unsigned sr = 0;
-//    if( ( event.lepton( 0 ).pt() > 20 ) &&
-//        ( event.lepton( 1 ).pt() > 30 ) &&
-//        ( event.lepton( 2 ).pt() > 30 ) &&
-//        ( event.lepton( 0 ).pt() < 100 ) &&
-//        ( event.lepton( 1 ).pt() < 80 ) &&
-//        ( event.lepton( 2 ).pt() < 80 ) ) sr+=14;
+    if( ( event.lepton( 0 ).pt() > 20 ) &&
+        ( event.lepton( 1 ).pt() > 30 ) &&
+        ( event.lepton( 2 ).pt() > 30 ) &&
+        ( event.lepton( 0 ).pt() < 100 ) &&
+        ( event.lepton( 1 ).pt() < 80 ) &&
+        ( event.lepton( 2 ).pt() < 80 ) ) sr+=14;
     if( nL == 3){
         if( nB == 0 ){
             if ( nJ == 2 ) sr += 1;

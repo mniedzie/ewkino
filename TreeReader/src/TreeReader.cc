@@ -476,15 +476,15 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_jetHFHadronFraction", _jetHFHadronFraction, &b__jetHFHadronFraction);
     _currentTreePtr->SetBranchAddress("_jetHFEmFraction", _jetHFEmFraction, &b__jetHFEmFraction);
     _currentTreePtr->SetBranchAddress("_met", &_met, &b__met);
-    _currentTreePtr->SetBranchAddress("_metJECDown", &_metJECDown, &b__metJECDown);
-    _currentTreePtr->SetBranchAddress("_metJECUp", &_metJECUp, &b__metJECUp);
-    _currentTreePtr->SetBranchAddress("_metUnclDown", &_metUnclDown, &b__metUnclDown);
-    _currentTreePtr->SetBranchAddress("_metUnclUp", &_metUnclUp, &b__metUnclUp);
+    _currentTreePtr->SetBranchAddress("_met_JECDown", &_metJECDown, &b__metJECDown);
+    _currentTreePtr->SetBranchAddress("_met_JECUp", &_metJECUp, &b__metJECUp);
+    _currentTreePtr->SetBranchAddress("_met_UnclDown", &_metUnclDown, &b__metUnclDown);
+    _currentTreePtr->SetBranchAddress("_met_UnclUp", &_metUnclUp, &b__metUnclUp);
     _currentTreePtr->SetBranchAddress("_metPhi", &_metPhi, &b__metPhi);
-    _currentTreePtr->SetBranchAddress("_metPhiJECDown", &_metPhiJECDown, &b__metPhiJECDown);
-    _currentTreePtr->SetBranchAddress("_metPhiJECUp", &_metPhiJECUp, &b__metPhiJECUp);
-    _currentTreePtr->SetBranchAddress("_metPhiUnclDown", &_metPhiUnclDown, &b__metPhiUnclDown);
-    _currentTreePtr->SetBranchAddress("_metPhiUnclUp", &_metPhiUnclUp, &b__metPhiUnclUp);
+    _currentTreePtr->SetBranchAddress("_metPhi_JECDown", &_metPhiJECDown, &b__metPhiJECDown);
+    _currentTreePtr->SetBranchAddress("_metPhi_JECUp", &_metPhiJECUp, &b__metPhiJECUp);
+    _currentTreePtr->SetBranchAddress("_metPhi_UnclDown", &_metPhiUnclDown, &b__metPhiUnclDown);
+    _currentTreePtr->SetBranchAddress("_metPhi_UnclUp", &_metPhiUnclUp, &b__metPhiUnclUp);
     _currentTreePtr->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);
     
     if( containsGeneratorInfo() ){
@@ -515,6 +515,21 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
         _currentTreePtr->SetBranchAddress("_lProvenanceConversion", _lProvenanceConversion, &b__lProvenanceConversion);
         _currentTreePtr->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         _currentTreePtr->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
+        _currentTreePtr->SetBranchAddress("_gen_n"                                      , &_gen_n                                     , &b__gen_n);
+        _currentTreePtr->SetBranchAddress("_gen_pt"                                     , _gen_pt                                     , &b__gen_pt);
+        _currentTreePtr->SetBranchAddress("_gen_eta"                                    , _gen_eta                                    , &b__gen_eta);
+        _currentTreePtr->SetBranchAddress("_gen_phi"                                    , _gen_phi                                    , &b__gen_phi);
+        _currentTreePtr->SetBranchAddress("_gen_E"                                      , _gen_E                                      , &b__gen_E);
+        _currentTreePtr->SetBranchAddress("_gen_pdgId"                                  , _gen_pdgId                                  , &b__gen_pdgId);
+        _currentTreePtr->SetBranchAddress("_gen_charge"                                 , _gen_charge                                 , &b__gen_charge);
+        _currentTreePtr->SetBranchAddress("_gen_status"                                 , _gen_status                                 , &b__gen_status);
+        _currentTreePtr->SetBranchAddress("_gen_isPromptFinalState"                     , _gen_isPromptFinalState                     , &b__gen_isPromptFinalState);
+        _currentTreePtr->SetBranchAddress("_gen_isDirectPromptTauDecayProductFinalState", _gen_isDirectPromptTauDecayProductFinalState, &b__gen_isDirectPromptTauDecayProductFinalState);
+        _currentTreePtr->SetBranchAddress("_gen_isLastCopy"                             , _gen_isLastCopy                             , &b__gen_isLastCopy);
+        _currentTreePtr->SetBranchAddress("_gen_index"                                  , _gen_index                                  , &b__gen_index);
+        _currentTreePtr->SetBranchAddress("_gen_motherIndex"                            , _gen_motherIndex                            , &b__gen_motherIndex);
+        _currentTreePtr->SetBranchAddress("_gen_daughter_n"                             , _gen_daughter_n                             , &b__gen_daughter_n);
+        _currentTreePtr->SetBranchAddress("_gen_daughterIndex"                          , _gen_daughterIndex                          , &b__gen_daughterIndex);
     } 
 
     if( !is2018() && isMC() ){
@@ -550,15 +565,15 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
     outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/i");
     outputTree->Branch("_met",                          &_met,                          "_met/D");
-    outputTree->Branch("_metJECDown",                   &_metJECDown,                   "_metJECDown/D");
-    outputTree->Branch("_metJECUp",                     &_metJECUp,                     "_metJECUp/D");
-    outputTree->Branch("_metUnclDown",                  &_metUnclDown,                  "_metUnclDown/D");
-    outputTree->Branch("_metUnclUp",                    &_metUnclUp,                    "_metUnclUp/D");
+    outputTree->Branch("_met_JECDown",                   &_metJECDown,                   "_metJECDown/D");
+    outputTree->Branch("_met_JECUp",                     &_metJECUp,                     "_metJECUp/D");
+    outputTree->Branch("_met_UnclDown",                  &_metUnclDown,                  "_metUnclDown/D");
+    outputTree->Branch("_met_UnclUp",                    &_metUnclUp,                    "_metUnclUp/D");
     outputTree->Branch("_metPhi",                       &_metPhi,                       "_metPhi/D");
-    outputTree->Branch("_metPhiJECDown",                &_metPhiJECDown,                "_metPhiJECDown/D");
-    outputTree->Branch("_metPhiJECUp",                  &_metPhiJECUp,                  "_metPhiJECUp/D");
-    outputTree->Branch("_metPhiUnclDown",               &_metPhiUnclDown,               "_metPhiUnclDown/D");
-    outputTree->Branch("_metPhiUnclUp",                 &_metPhiUnclUp,                 "_metPhiUnclUp/D");
+    outputTree->Branch("_metPhi_JECDown",                &_metPhiJECDown,                "_metPhiJECDown/D");
+    outputTree->Branch("_metPhi_JECUp",                  &_metPhiJECUp,                  "_metPhiJECUp/D");
+    outputTree->Branch("_metPhi_UnclDown",               &_metPhiUnclDown,               "_metPhiUnclDown/D");
+    outputTree->Branch("_metPhi_UnclUp",                 &_metPhiUnclUp,                 "_metPhiUnclUp/D");
     outputTree->Branch("_metSignificance",              &_metSignificance,              "_metSignificance/D");
     outputTree->Branch("_passTrigger_e", &_passTrigger_e, "_passTrigger_e/O");
     outputTree->Branch("_passTrigger_ee", &_passTrigger_ee, "_passTrigger_ee/O");
@@ -723,6 +738,22 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/i");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/i");
+
+        outputTree->Branch("_gen_n"                                      , &_gen_n                                      ,"_gen_n/i"); // UInt_t          _gen_n;
+        outputTree->Branch("_gen_pt"                                     , &_gen_pt                                     ,"_gen_pt[_gen_n]/D"); // Double_t        _gen_pt[gen_nL_max];
+        outputTree->Branch("_gen_eta"                                    , &_gen_eta                                    ,"_gen_eta[_gen_n]/D"); // Double_t        _gen_eta[gen_nL_max];
+        outputTree->Branch("_gen_phi"                                    , &_gen_phi                                    ,"_gen_phi[_gen_n]/D"); // Double_t        _gen_phi[gen_nL_max];
+        outputTree->Branch("_gen_E"                                      , &_gen_E                                      ,"_gen_E[_gen_n]/D"); // Double_t        _gen_E[gen_nL_max];
+        outputTree->Branch("_gen_pdgId"                                  , &_gen_pdgId                                  ,"_gen_pdgId[_gen_n]/I"); // Int_t           _gen_pdgId[gen_nL_max];
+        outputTree->Branch("_gen_charge"                                 , &_gen_charge                                 ,"_gen_charge[_gen_n]/I"); // Int_t           _gen_charge[gen_nL_max];
+        outputTree->Branch("_gen_status"                                 , &_gen_status                                 ,"_gen_status[_gen_n]/I"); // Int_t           _gen_status[gen_nL_max];
+        outputTree->Branch("_gen_isPromptFinalState"                     , &_gen_isPromptFinalState                     ,"_gen_isPromptFinalState[_gen_n]/O"); // Bool_t          _gen_isPromptFinalState[
+        outputTree->Branch("_gen_isDirectPromptTauDecayProductFinalState", &_gen_isDirectPromptTauDecayProductFinalState,"_gen_isDirectPromptTauDecayProductFinalState[_gen_n]/O"); // Bool_t          _gen_isDirectPromptTauDe
+        outputTree->Branch("_gen_isLastCopy"                             , &_gen_isLastCopy                             ,"_gen_isLastCopy[_gen_n]/O"); // Bool_t          _gen_isLastCopy[gen_nL_m
+        outputTree->Branch("_gen_index"                                  , &_gen_index                                  ,"_gen_index[_gen_n]/I"); // Int_t           _gen_index[gen_nL_max];
+        outputTree->Branch("_gen_motherIndex"                            , &_gen_motherIndex                            ,"_gen_motherIndex[_gen_n]/I"); // Int_t           _gen_motherIndex[gen_nL_
+        outputTree->Branch("_gen_daughter_n"                             , &_gen_daughter_n                             ,"_gen_daughter_n[_gen_n]/I"); // Int_t           _gen_daughter_n[gen_nL_m
+        outputTree->Branch("_gen_daughterIndex"                          , &_gen_daughterIndex                          ,"_gen_daughterIndex[_gen_n][10]/I"); // Int_t           _gen_daughterIndex[5000]
     } 
 
     if( !is2018() && isMC() ){
